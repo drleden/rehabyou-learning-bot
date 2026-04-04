@@ -1,0 +1,11 @@
+Alembic migrations.
+
+Usage:
+  # Generate a new migration after changing models:
+  alembic revision --autogenerate -m "describe change"
+
+  # Apply all pending migrations:
+  alembic upgrade head
+
+  # Rollback one step:
+  alembic downgrade -1

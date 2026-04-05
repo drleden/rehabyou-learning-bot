@@ -21,7 +21,14 @@ depends_on: Union[str, Sequence[str], None] = None
 # ---------------------------------------------------------------------------
 
 def _create_enum(name: str, *values: str) -> None:
-    op.execute(f"CREATE TYPE IF NOT EXISTS {name} AS ENUM ({', '.join(repr(v) for v in values)})")
+    vals = ", ".join(f"'{v}'" for v in values)
+    op.execute(
+        f"DO $$ BEGIN "
+        f"IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = '{name}') THEN "
+        f"CREATE TYPE {name} AS ENUM ({vals}); "
+        f"END IF; "
+        f"END $$;"
+    )
 
 
 def _drop_enum(name: str) -> None:

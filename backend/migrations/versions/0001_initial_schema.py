@@ -21,7 +21,7 @@ depends_on: Union[str, Sequence[str], None] = None
 # ---------------------------------------------------------------------------
 
 def _create_enum(name: str, *values: str) -> None:
-    op.execute(f"CREATE TYPE {name} AS ENUM ({', '.join(repr(v) for v in values)})")
+    op.execute(f"CREATE TYPE IF NOT EXISTS {name} AS ENUM ({', '.join(repr(v) for v in values)})")
 
 
 def _drop_enum(name: str) -> None:

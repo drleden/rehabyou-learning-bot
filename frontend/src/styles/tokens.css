@@ -1,0 +1,36 @@
+/* ── Brand design tokens ─────────────────────────────────────────────────── */
+:root {
+  /* Backgrounds */
+  --bg:          #0a0a0a;
+  --bg-card:     #111111;
+  --bg-card-2:   #181818;
+  --bg-overlay:  rgba(255, 255, 255, 0.04);
+
+  /* Borders */
+  --border:      rgba(255, 255, 255, 0.07);
+  --border-active: rgba(255, 255, 255, 0.14);
+
+  /* Typography */
+  --text-primary:   #ffffff;
+  --text-secondary: #888888;
+  --text-muted:     #444444;
+
+  /* Brand palette */
+  --red:        #d93025;
+  --orange:     #ff6b35;
+  --terracotta: #c4623a;
+  --orange-dim: rgba(255, 107, 53, 0.12);
+
+  /* Gradients */
+  --grad-brand:  linear-gradient(135deg, #ff6b35 0%, #c4623a 100%);
+  --grad-dark:   linear-gradient(180deg, #181818 0%, #0a0a0a 100%);
+
+  /* Spacing */
+  --r-sm:  10px;
+  --r-md:  16px;
+  --r-lg:  20px;
+  --r-xl:  24px;
+
+  /* Motion */
+  --ease: cubic-bezier(0.4, 0, 0.2, 1);
+}

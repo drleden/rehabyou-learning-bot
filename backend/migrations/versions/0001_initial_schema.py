@@ -726,15 +726,6 @@ def upgrade() -> None:
                   server_default=sa.text("now()")),
     )
 
-    # ── Indexes ──────────────────────────────────────────────────────────────
-    op.create_index("ix_users_telegram_id",   "users",        ["telegram_id"],  unique=True)
-    op.create_index("ix_user_progress_user",  "user_progress", ["user_id"])
-    op.create_index("ix_user_progress_lesson","user_progress", ["lesson_id"])
-    op.create_index("ix_test_attempts_user",  "test_attempts", ["user_id"])
-    op.create_index("ix_notifications_user",  "notifications", ["user_id", "is_sent"])
-    op.create_index("ix_audit_log_actor",     "audit_log",    ["actor_id"])
-    op.create_index("ix_ai_conversations_user","ai_conversations", ["user_id"])
-
 
 # ---------------------------------------------------------------------------
 # Downgrade

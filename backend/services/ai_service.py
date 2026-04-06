@@ -9,13 +9,19 @@ Responsibilities:
 """
 import os
 
+import httpx
 from anthropic import AsyncAnthropic
 
 from config import settings
 
 
 def get_client() -> AsyncAnthropic:
-    return AsyncAnthropic(api_key=os.environ.get("ANTHROPIC_API_KEY") or settings.ANTHROPIC_API_KEY)
+    proxy_url = os.environ.get("ANTHROPIC_PROXY_URL")
+    http_client = httpx.AsyncClient(proxy=proxy_url) if proxy_url else None
+    return AsyncAnthropic(
+        api_key=os.environ.get("ANTHROPIC_API_KEY") or settings.ANTHROPIC_API_KEY,
+        http_client=http_client,
+    )
 
 SYSTEM_PROMPT_ASSISTANT = """
 Ты ИИ-ассистент образовательной платформы Rehab.You.

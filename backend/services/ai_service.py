@@ -7,11 +7,15 @@ Responsibilities:
 3. Generate weekly/on-demand AI digest for superadmin/owner
 4. Interpret psychological test results per role
 """
+import os
+
 from anthropic import AsyncAnthropic
 
 from config import settings
 
-client = AsyncAnthropic(api_key=settings.ANTHROPIC_API_KEY)
+
+def get_client() -> AsyncAnthropic:
+    return AsyncAnthropic(api_key=os.environ.get("ANTHROPIC_API_KEY") or settings.ANTHROPIC_API_KEY)
 
 SYSTEM_PROMPT_ASSISTANT = """
 Ты ИИ-ассистент образовательной платформы Rehab.You.
@@ -51,7 +55,7 @@ async def check_assignment(assignment_text: str, lesson_topic: str) -> dict:
 {{"status": "accepted" | "rejected", "comment": "<причина на русском>"}}
 """
 
-    message = await client.messages.create(
+    message = await get_client().messages.create(
         model=settings.CLAUDE_MODEL,
         max_tokens=512,
         messages=[{"role": "user", "content": prompt}],
@@ -70,7 +74,7 @@ async def chat(messages: list[dict], user_context: dict) -> str:
     """
     system = SYSTEM_PROMPT_ASSISTANT + "\n\nКонтекст:\n" + str(user_context)
 
-    response = await client.messages.create(
+    response = await get_client().messages.create(
         model=settings.CLAUDE_MODEL,
         max_tokens=1024,
         system=system,
@@ -100,7 +104,7 @@ async def generate_digest(stats: dict) -> str:
 4. Проблемные зоны
 5. Рекомендации
 """
-    response = await client.messages.create(
+    response = await get_client().messages.create(
         model=settings.CLAUDE_MODEL,
         max_tokens=2048,
         messages=[{"role": "user", "content": prompt}],
@@ -130,7 +134,7 @@ async def interpret_psych_test(raw_score: dict, role: str, test_name: str) -> st
 
 Язык: русский. Тон: профессиональный, конструктивный.
 """
-    response = await client.messages.create(
+    response = await get_client().messages.create(
         model=settings.CLAUDE_MODEL,
         max_tokens=1024,
         messages=[{"role": "user", "content": prompt}],

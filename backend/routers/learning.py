@@ -17,6 +17,7 @@ from pydantic import BaseModel
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
+from services import ai_service
 
 from database import get_db
 from deps import get_current_user
@@ -525,11 +526,24 @@ async def submit_assignment(
     prev = [a for a in lesson.assignment.answers if a.user_id == user.id]
     attempt_number = len(prev) + 1
 
-    ai_comment = (
-        "Отличная работа! Вы подробно и грамотно изложили материал. "
-        "Продолжайте в том же духе — это демонстрирует глубокое понимание темы."
-    )
+    try:
+        ai_result = await ai_service.check_assignment(
+            assignment_text=body.text,
+            lesson_topic=lesson.title,
+        )
+        ai_comment = ai_result.get("comment", "Задание принято.")
+        ai_status  = ai_result.get("status", "accepted")
+    except Exception:
+        ai_comment = "Задание принято. ИИ-проверка временно недоступна."
+        ai_status  = "accepted"
     ai_score = min(100.0, 70.0 + word_count * 0.5)
+
+    if ai_status == "rejected":
+        return AssignmentResultOut(
+            status="rejected",
+            ai_comment=ai_comment,
+            word_count=word_count,
+        )
 
     answer = AssignmentAnswer(
         assignment_id=lesson.assignment.id,
@@ -540,6 +554,7 @@ async def submit_assignment(
         ai_comment=ai_comment,
         attempt_number=attempt_number,
     )
+    final_status = ai_status
     db.add(answer)
 
     # Mark lesson as complete
@@ -551,7 +566,7 @@ async def submit_assignment(
     await db.commit()
 
     return AssignmentResultOut(
-        status="accepted",
+        status=final_status,
         ai_comment=ai_comment,
         word_count=word_count,
     )

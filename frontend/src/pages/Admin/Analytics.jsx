@@ -9,7 +9,7 @@
  */
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import api from "../../api";
 import "./Analytics.css";
 
@@ -281,9 +281,67 @@ function InactiveSection({ data, isLoading }) {
   );
 }
 
+// ── Digest modal ──────────────────────────────────────────────────────────────
+
+function DigestModal({ onClose }) {
+  const [text, setText] = useState(null);
+  const [copied, setCopied] = useState(false);
+
+  const mut = useMutation({
+    mutationFn: () => api.post("/api/ai/digest").then(r => r.data.digest),
+    onSuccess: (digest) => setText(digest),
+  });
+
+  // Trigger automatically when modal opens
+  useState(() => { mut.mutate(); }, []);
+
+  function copy() {
+    if (!text) return;
+    navigator.clipboard?.writeText(text).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    });
+  }
+
+  return (
+    <div className="an-overlay" onClick={onClose}>
+      <div className="an-digest-modal" onClick={e => e.stopPropagation()}>
+        <div className="an-digest-hd">
+          <span className="an-digest-title">📊 ИИ-сводка</span>
+          <button className="an-digest-close" onClick={onClose}>✕</button>
+        </div>
+
+        {mut.isPending && (
+          <div className="an-digest-loading">
+            <div className="an-digest-spinner" />
+            <p>Генерирую сводку…</p>
+          </div>
+        )}
+
+        {mut.isError && (
+          <div className="an-digest-error">
+            <p>Не удалось сгенерировать сводку.</p>
+            <button className="an-digest-retry" onClick={() => mut.mutate()}>Повторить</button>
+          </div>
+        )}
+
+        {text && (
+          <>
+            <div className="an-digest-body">{text}</div>
+            <button className="an-digest-copy" onClick={copy}>
+              {copied ? "✅ Скопировано" : "📋 Скопировать"}
+            </button>
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
+
 // ── Page ──────────────────────────────────────────────────────────────────────
 
 export default function Analytics() {
+  const [digestOpen, setDigestOpen] = useState(false);
   const { data: overview, isLoading: ovLoading } = useOverview();
   const { data: courses,  isLoading: crsLoading }  = useCourses();
   const { data: staff,    isLoading: stfLoading }   = useStaff();
@@ -296,7 +354,12 @@ export default function Analytics() {
       <header className="an-header">
         <Link to="/admin" className="an-back">‹</Link>
         <span className="an-header-title">Аналитика</span>
+        <button className="an-digest-btn" onClick={() => setDigestOpen(true)}>
+          🤖 ИИ-сводка
+        </button>
       </header>
+
+      {digestOpen && <DigestModal onClose={() => setDigestOpen(false)} />}
 
       {/* Overview cards */}
       <div className="an-cards">

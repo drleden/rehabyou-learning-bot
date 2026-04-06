@@ -95,7 +95,8 @@ function AppInner() {
       <Route path="/lessons/:id"    element={<LessonView />} />
       <Route path="/academy"         element={<Academy />} />
       <Route path="/profile/*"      element={<Profile />} />
-      <Route path="/ai"             element={<AIAssistant />} />
+      <Route path="/ai"              element={<AIAssistant />} />
+      <Route path="/ai-assistant"   element={<AIAssistant />} />
       <Route path="/questions"      element={<PageStub title="Вопросы" icon="💬" />} />
       <Route path="/rating"         element={<PageStub title="Рейтинг" icon="🏆" />} />
       <Route path="/admin/*"        element={<Admin />} />

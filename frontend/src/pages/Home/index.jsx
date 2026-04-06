@@ -240,10 +240,11 @@ function MasterDashboard({ user }) {
 /** Admin / manager — management dashboard */
 function ManagerDashboard({ user }) {
   const mgmtLinks = [
-    { to: "/admin/staff",     icon: "👥", label: "Сотрудники", desc: "Управление командой",  ready: true },
-    { to: "/admin/courses",   icon: "📚", label: "Курсы",      desc: "Контент и назначение", ready: true },
-    { to: "/admin/academy",   icon: "🎓", label: "Академия",   desc: "Расписание занятий",   ready: true },
-    { to: "/admin/analytics", icon: "📊", label: "Аналитика",  desc: "Прогресс и статистика",ready: true },
+    { to: "/admin/staff",     icon: "👥", label: "Сотрудники", desc: "Управление командой" },
+    { to: "/admin/courses",   icon: "📚", label: "Курсы",      desc: "Контент и назначение" },
+    { to: "/admin/academy",   icon: "🎓", label: "Академия",   desc: "Расписание занятий" },
+    { to: "/admin/analytics", icon: "📊", label: "Аналитика",  desc: "Прогресс и статистика" },
+    { to: "/ai-assistant",    icon: "🤖", label: "ИИ-ассист.", desc: "Анализ и рекомендации" },
   ];
 
   return (
@@ -295,14 +296,14 @@ function ManagerDashboard({ user }) {
 function SuperadminDashboard({ user }) {
   // ready = implemented; stub = show "В разработке" toast on tap
   const adminLinks = [
-    { to: "/admin/staff",        icon: "👥", label: "Сотрудники",   ready: true  },
-    { to: "/admin/courses",      icon: "📚", label: "Курсы",        ready: true  },
-    { to: "/admin/academy",      icon: "🎓", label: "Академия",     ready: true  },
-    { to: "/admin/analytics",    icon: "📊", label: "Аналитика",    ready: true  },
-    { to: "/admin/services",     icon: "🔑", label: "Допуски",      ready: true  },
-    { to: "/admin/settings",     icon: "⚙️",  label: "Настройки",   ready: true  },
-    { to: "/admin/announcements",icon: "📢", label: "Рассылки",     ready: true  },
-    { to: "/admin/subscriptions",icon: "💳", label: "Подписки",     ready: true  },
+    { to: "/admin/staff",        icon: "👥", label: "Сотрудники" },
+    { to: "/admin/courses",      icon: "📚", label: "Курсы"      },
+    { to: "/admin/academy",      icon: "🎓", label: "Академия"   },
+    { to: "/admin/analytics",    icon: "📊", label: "Аналитика"  },
+    { to: "/ai-assistant",       icon: "🤖", label: "ИИ-ассист." },
+    { to: "/admin/services",     icon: "🔑", label: "Допуски"    },
+    { to: "/admin/settings",     icon: "⚙️",  label: "Настройки" },
+    { to: "/admin/subscriptions",icon: "💳", label: "Подписки"   },
   ];
 
   return (

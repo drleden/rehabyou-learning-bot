@@ -92,7 +92,7 @@ function AppInner() {
       <Route path="/courses"        element={<MyCourses />} />
       <Route path="/courses/:id"    element={<CourseView />} />
       <Route path="/lessons/:id"    element={<LessonView />} />
-      <Route path="/academy/*"      element={<Academy />} />
+      <Route path="/academy"         element={<Academy />} />
       <Route path="/profile/*"      element={<Profile />} />
       <Route path="/ai"             element={<AIAssistant />} />
       <Route path="/admin/*"        element={<Admin />} />

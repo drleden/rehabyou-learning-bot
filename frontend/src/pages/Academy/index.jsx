@@ -17,6 +17,7 @@ const useMyProgress = () =>
   useQuery({
     queryKey: ["academy-progress"],
     queryFn: () => api.get("/api/academy/my-progress").then(r => r.data),
+    placeholderData: null,
     retry: false,
   });
 

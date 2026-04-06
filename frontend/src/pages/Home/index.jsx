@@ -242,7 +242,7 @@ function ManagerDashboard({ user }) {
   const mgmtLinks = [
     { to: "/admin/staff",   icon: "👥", label: "Сотрудники", desc: "Управление командой",  ready: true },
     { to: "/admin/courses", icon: "📚", label: "Курсы",      desc: "Контент и назначение", ready: true },
-    { to: null,             icon: "🎓", label: "Академия",   desc: "Расписание занятий",   ready: false },
+    { to: "/admin/academy", icon: "🎓", label: "Академия",   desc: "Расписание занятий",   ready: true },
     { to: null,             icon: "📊", label: "Аналитика",  desc: "Прогресс и статистика",ready: false },
   ];
 
@@ -306,7 +306,7 @@ function SuperadminDashboard({ user }) {
   const adminLinks = [
     { to: "/admin/staff",   icon: "👥", label: "Сотрудники",  ready: true  },
     { to: "/admin/courses", icon: "📚", label: "Курсы",       ready: true  },
-    { to: null,             icon: "🎓", label: "Академия",    ready: false },
+    { to: "/admin/academy", icon: "🎓", label: "Академия",    ready: true  },
     { to: null,             icon: "📊", label: "Аналитика",   ready: false },
     { to: null,             icon: "💳", label: "Подписки",    ready: false },
     { to: null,             icon: "🤖", label: "ИИ-настройки",ready: false },

@@ -1,3 +1,5 @@
+from database import Base  # noqa: F401 — re-exported so `from models import Base` works
+
 from .users import (
     Organization,
     Branch,

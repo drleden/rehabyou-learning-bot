@@ -21,7 +21,8 @@ export default function Admin() {
       <Route path="analytics" element={<Analytics />} />
       <Route path="services/*" element={<AdminStub title="Допуски к услугам" icon="🔑" />} />
       <Route path="subscriptions/*" element={<AdminStub title="Подписки и промокоды" icon="💳" />} />
-      <Route path="settings/*" element={<AdminStub title="Настройки" icon="⚙️" />} />
+      <Route path="settings/*" element={<AdminStub title="Организации и настройки" icon="🏢" />} />
+      <Route path="audit/*" element={<AdminStub title="Журнал аудита" icon="📋" />} />
       <Route path="announcements/*" element={<AdminStub title="Рассылки" icon="📢" />} />
       <Route path="integrations/*" element={<AdminStub title="Интеграции" icon="🔗" />} />
     </Routes>

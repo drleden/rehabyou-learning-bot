@@ -296,17 +296,21 @@ function ManagerDashboard({ user }) {
 
 /** Superadmin / owner — full control */
 function SuperadminDashboard({ user }) {
-  // ready = implemented; stub = show "В разработке" toast on tap
   const adminLinks = [
-    { to: "/admin/staff",        icon: "👥", label: "Сотрудники" },
-    { to: "/admin/courses",      icon: "📚", label: "Курсы"      },
-    { to: "/admin/academy",      icon: "🎓", label: "Академия"   },
-    { to: "/admin/analytics",    icon: "📊", label: "Аналитика"  },
-    { to: "/ai-assistant",       icon: "🤖", label: "ИИ-ассист." },
-    { to: "/psych-tests",        icon: "🧠", label: "Психотесты" },
-    { to: "/admin/services",     icon: "🔑", label: "Допуски"    },
-    { to: "/admin/settings",     icon: "⚙️",  label: "Настройки" },
-    { to: "/admin/subscriptions",icon: "💳", label: "Подписки"   },
+    { to: "/admin/staff",        icon: "👥", label: "Сотрудники"  },
+    { to: "/admin/courses",      icon: "📚", label: "Курсы"       },
+    { to: "/admin/academy",      icon: "🎓", label: "Академия"    },
+    { to: "/admin/analytics",    icon: "📊", label: "Аналитика"   },
+    { to: "/admin/subscriptions",icon: "💳", label: "Подписки"    },
+    { to: "/ai-assistant",       icon: "🤖", label: "ИИ-ассистент"},
+    { to: "/admin/settings",     icon: "🏢", label: "Организации" },
+    { to: "/admin/audit",        icon: "📋", label: "Аудит"       },
+  ];
+
+  const quickLinks = [
+    { to: "/psych-tests",     icon: "🧠", label: "Психотесты" },
+    { to: "/admin/analytics", icon: "📊", label: "Дайджест"   },
+    { to: "/profile",         icon: "👤", label: "Профиль"    },
   ];
 
   return (
@@ -329,12 +333,21 @@ function SuperadminDashboard({ user }) {
       <div className="section-label">Управление платформой</div>
       <div className="admin-grid">
         {adminLinks.map(({ to, icon, label }) => (
-          <Link key={label} to={to} className="admin-tile">
+          <Link key={to} to={to} className="admin-tile">
             <span className="admin-tile-icon">{icon}</span>
             <span className="admin-tile-label">{label}</span>
           </Link>
         ))}
       </div>
+
+      <nav className="quick-nav quick-nav--scroll">
+        {quickLinks.map(({ to, icon, label }) => (
+          <Link key={to} to={to} className="quick-nav-item">
+            <span className="quick-nav-icon">{icon}</span>
+            <span className="quick-nav-label">{label}</span>
+          </Link>
+        ))}
+      </nav>
     </div>
   );
 }

@@ -276,7 +276,7 @@ export default function Staff() {
     <div className="staff-page">
       {/* Header */}
       <header className="staff-header">
-        <Link to="/admin" className="back-btn">‹</Link>
+        <Link to="/" className="back-btn">‹</Link>
         <span className="staff-title">Сотрудники</span>
         <button className="add-btn" onClick={() => setInviting(true)}>＋</button>
       </header>

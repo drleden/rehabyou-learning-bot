@@ -222,10 +222,10 @@ function MasterDashboard({ user }) {
 /** Admin / manager — management dashboard */
 function ManagerDashboard({ user }) {
   const mgmtLinks = [
-    { to: "/admin/staff",     icon: "👥", label: "Сотрудники",  desc: "Управление командой" },
-    { to: "/admin/courses",   icon: "📚", label: "Курсы",       desc: "Контент и назначение" },
-    { to: "/admin/academy",   icon: "🎓", label: "Академия",    desc: "Расписание занятий" },
-    { to: "/admin/analytics", icon: "📊", label: "Аналитика",   desc: "Прогресс и статистика" },
+    { to: "/admin/staff",   icon: "👥", label: "Сотрудники", desc: "Управление командой",  ready: true },
+    { to: "/admin/courses", icon: "📚", label: "Курсы",      desc: "Контент и назначение", ready: true },
+    { to: null,             icon: "🎓", label: "Академия",   desc: "Расписание занятий",   ready: false },
+    { to: null,             icon: "📊", label: "Аналитика",  desc: "Прогресс и статистика",ready: false },
   ];
 
   return (
@@ -247,26 +247,35 @@ function ManagerDashboard({ user }) {
 
       <div className="section-label">Управление</div>
       <div className="mgmt-grid">
-        {mgmtLinks.map(({ to, icon, label, desc }) => (
-          <Link key={to} to={to} className="mgmt-card">
-            <span className="mgmt-icon">{icon}</span>
-            <span className="mgmt-label">{label}</span>
-            <span className="mgmt-desc">{desc}</span>
-          </Link>
-        ))}
+        {mgmtLinks.map(({ to, icon, label, desc, ready }) =>
+          ready ? (
+            <Link key={label} to={to} className="mgmt-card">
+              <span className="mgmt-icon">{icon}</span>
+              <span className="mgmt-label">{label}</span>
+              <span className="mgmt-desc">{desc}</span>
+            </Link>
+          ) : (
+            <button key={label} className="mgmt-card" style={{ opacity: 0.5, cursor: "default" }}
+              onClick={() => alert("В разработке")}>
+              <span className="mgmt-icon">{icon}</span>
+              <span className="mgmt-label">{label}</span>
+              <span className="mgmt-desc">{desc}</span>
+            </button>
+          )
+        )}
       </div>
 
       <div className="section-label" style={{ marginTop: 24 }}>Быстрые действия</div>
       <div className="cards">
-        <Link to="/admin/staff/invite" className="card card--action">
+        <Link to="/admin/staff" className="card card--action">
           <div className="card-icon card-icon--orange">➕</div>
-          <div className="card-title">Добавить сотрудника</div>
-          <div className="card-subtitle">Пригласить нового мастера в систему</div>
+          <div className="card-title">Сотрудники</div>
+          <div className="card-subtitle">Управление командой и приглашения</div>
         </Link>
-        <Link to="/admin/analytics" className="card card--action">
-          <div className="card-icon card-icon--terracotta">📈</div>
-          <div className="card-title">Отчёт за неделю</div>
-          <div className="card-subtitle">Прогресс команды и пропуски</div>
+        <Link to="/admin/courses" className="card card--action">
+          <div className="card-icon card-icon--terracotta">📚</div>
+          <div className="card-title">Курсы</div>
+          <div className="card-subtitle">Контент, модули и уроки</div>
         </Link>
       </div>
     </div>
@@ -275,15 +284,16 @@ function ManagerDashboard({ user }) {
 
 /** Superadmin / owner — full control */
 function SuperadminDashboard({ user }) {
+  // ready = implemented; stub = show "В разработке" toast on tap
   const adminLinks = [
-    { to: "/admin/orgs",          icon: "🏢", label: "Организации" },
-    { to: "/admin/staff",         icon: "👥", label: "Сотрудники" },
-    { to: "/admin/courses",       icon: "📚", label: "Курсы" },
-    { to: "/admin/academy",       icon: "🎓", label: "Академия" },
-    { to: "/admin/subscriptions", icon: "💳", label: "Подписки" },
-    { to: "/admin/analytics",     icon: "📊", label: "Аналитика" },
-    { to: "/admin/ai",            icon: "🤖", label: "ИИ-настройки" },
-    { to: "/admin/audit",         icon: "🔍", label: "Аудит" },
+    { to: "/admin/staff",   icon: "👥", label: "Сотрудники",  ready: true  },
+    { to: "/admin/courses", icon: "📚", label: "Курсы",       ready: true  },
+    { to: null,             icon: "🎓", label: "Академия",    ready: false },
+    { to: null,             icon: "📊", label: "Аналитика",   ready: false },
+    { to: null,             icon: "💳", label: "Подписки",    ready: false },
+    { to: null,             icon: "🤖", label: "ИИ-настройки",ready: false },
+    { to: null,             icon: "🏢", label: "Орг-ции",     ready: false },
+    { to: null,             icon: "🔍", label: "Аудит",       ready: false },
   ];
 
   return (
@@ -305,12 +315,20 @@ function SuperadminDashboard({ user }) {
 
       <div className="section-label">Управление платформой</div>
       <div className="admin-grid">
-        {adminLinks.map(({ to, icon, label }) => (
-          <Link key={to} to={to} className="admin-tile">
-            <span className="admin-tile-icon">{icon}</span>
-            <span className="admin-tile-label">{label}</span>
-          </Link>
-        ))}
+        {adminLinks.map(({ to, icon, label, ready }) =>
+          ready ? (
+            <Link key={label} to={to} className="admin-tile">
+              <span className="admin-tile-icon">{icon}</span>
+              <span className="admin-tile-label">{label}</span>
+            </Link>
+          ) : (
+            <button key={label} className="admin-tile admin-tile--wip"
+              onClick={() => alert("В разработке")}>
+              <span className="admin-tile-icon">{icon}</span>
+              <span className="admin-tile-label">{label}</span>
+            </button>
+          )
+        )}
       </div>
     </div>
   );

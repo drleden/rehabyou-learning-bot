@@ -462,6 +462,13 @@
 .admin-tile-icon  { font-size: 22px; }
 .admin-tile-label { font-size: 10px; font-weight: 600; color: var(--text-secondary); text-align: center; }
 
+.admin-tile--wip {
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+  opacity: 0.5;
+}
+
 /* ── Trial / waiting screen ──────────────────────────────────────────────── */
 
 .trial-screen {

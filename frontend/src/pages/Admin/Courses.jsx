@@ -361,7 +361,7 @@ export default function Courses() {
   return (
     <div className="courses-page">
       <header className="courses-header">
-        <Link to="/admin" className="back-btn">‹</Link>
+        <Link to="/" className="back-btn">‹</Link>
         <span className="courses-title">Курсы</span>
         <button className="add-btn" onClick={() => setCreating(true)}>＋</button>
       </header>

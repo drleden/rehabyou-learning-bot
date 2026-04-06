@@ -1,0 +1,251 @@
+/* ── Profile page ─────────────────────────────────────────────────────────── */
+
+.pf-page {
+  min-height: 100dvh;
+  background: var(--bg);
+  color: var(--text-primary);
+  font-family: -apple-system, "SF Pro Display", "Segoe UI", sans-serif;
+  display: flex;
+  flex-direction: column;
+  padding-bottom: env(safe-area-inset-bottom, 32px);
+}
+
+/* header */
+.pf-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--border);
+  position: sticky;
+  top: 0;
+  background: var(--bg);
+  z-index: 10;
+}
+
+.pf-back {
+  font-size: 24px;
+  color: var(--text-secondary);
+  text-decoration: none;
+  line-height: 1;
+  padding: 4px 6px;
+  margin-left: -6px;
+  border-radius: var(--r-sm);
+}
+
+.pf-header-title {
+  font-size: 17px;
+  font-weight: 700;
+}
+
+/* identity block */
+.pf-identity {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 28px 16px 20px;
+  text-align: center;
+}
+
+.pf-avatar {
+  width: 76px;
+  height: 76px;
+  border-radius: 50%;
+  background: var(--orange-dim);
+  border: 2px solid var(--orange);
+  color: var(--orange);
+  font-size: 26px;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 14px;
+}
+
+.pf-name {
+  font-size: 22px;
+  font-weight: 800;
+  margin: 0 0 4px;
+}
+
+.pf-username {
+  font-size: 14px;
+  color: var(--text-secondary);
+  margin-bottom: 10px;
+}
+
+.pf-badges {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin-bottom: 8px;
+}
+
+.pf-badge {
+  font-size: 12px;
+  font-weight: 700;
+  padding: 4px 12px;
+  border-radius: 20px;
+}
+
+.pf-badge--role {
+  background: var(--bg-overlay);
+  border: 1px solid var(--border);
+  color: var(--text-secondary);
+}
+
+.pf-badge--status {
+  border: 1px solid transparent;
+}
+
+.pf-badge--active  { background: rgba(80,200,120,0.12); color: #50c878; border-color: rgba(80,200,120,0.3); }
+.pf-badge--trial   { background: var(--orange-dim); color: var(--orange); border-color: var(--orange); }
+.pf-badge--blocked { background: rgba(255,80,80,0.12); color: #ff5050; border-color: rgba(255,80,80,0.3); }
+.pf-badge--fired   { background: var(--bg-overlay); color: var(--text-muted); border-color: var(--border); }
+
+.pf-phone {
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+/* section label */
+.pf-section-label {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  padding: 18px 16px 8px;
+}
+
+/* chips */
+.pf-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 0 16px;
+}
+
+.pf-chip {
+  font-size: 13px;
+  font-weight: 600;
+  padding: 6px 14px;
+  border-radius: 20px;
+  border: 1px solid;
+}
+
+.pf-chip--ok {
+  background: rgba(80,200,120,0.10);
+  border-color: rgba(80,200,120,0.3);
+  color: #50c878;
+}
+
+.pf-chip--no {
+  background: var(--bg-overlay);
+  border-color: var(--border);
+  color: var(--text-muted);
+}
+
+.pf-chips-skeleton {
+  height: 36px;
+  margin: 0 16px;
+  border-radius: 20px;
+  background: var(--bg-card);
+  animation: pf-shimmer 1.4s infinite linear;
+}
+
+@keyframes pf-shimmer {
+  0% { opacity: 0.6; }
+  50% { opacity: 1; }
+  100% { opacity: 0.6; }
+}
+
+/* progress card */
+.pf-progress-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--r-xl);
+  margin: 0 12px;
+  padding: 16px;
+}
+
+.pf-progress-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 4px 0;
+}
+
+.pf-progress-label {
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+
+.pf-progress-val {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.pf-progress-val--ok {
+  color: #50c878;
+}
+
+.pf-divider {
+  height: 1px;
+  background: var(--border);
+  margin: 10px 0;
+}
+
+.pf-progress-active-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 8px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.pf-bar-wrap {
+  height: 6px;
+  background: var(--bg-overlay);
+  border-radius: 3px;
+  overflow: hidden;
+  margin-bottom: 4px;
+}
+
+.pf-bar-fill {
+  height: 100%;
+  background: var(--grad-brand);
+  border-radius: 3px;
+  transition: width 0.4s ease;
+}
+
+.pf-bar-pct {
+  font-size: 12px;
+  color: var(--text-muted);
+  text-align: right;
+}
+
+/* link button */
+.pf-link-btn {
+  display: block;
+  margin: 18px 12px 0;
+  padding: 12px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--r-xl);
+  text-align: center;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--orange);
+  text-decoration: none;
+}
+
+.pf-empty {
+  font-size: 14px;
+  color: var(--text-muted);
+  padding: 0 16px 12px;
+}

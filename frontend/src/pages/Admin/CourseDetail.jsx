@@ -180,7 +180,7 @@ function TestModal({ lesson, courseId, onClose }) {
     setSaveErr(null);
     try {
       // create or reuse test
-      const testRes = await api.post(`/api/courses/lessons/${lesson.id}/test`, { pass_threshold: 0.8 });
+      const testRes = await api.post(`/api/courses/lessons/${lesson.id}/test`, { pass_threshold: 0.95 });
       const testId = testRes.data.id;
       for (const q of questions) {
         if (!q.text.trim()) continue;

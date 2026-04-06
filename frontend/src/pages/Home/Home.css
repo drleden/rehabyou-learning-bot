@@ -369,6 +369,137 @@
   transform: translateX(4px);
 }
 
+/* ── Role chip ───────────────────────────────────────────────────────────── */
+
+.role-chip {
+  display: inline-flex;
+  align-items: center;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 4px 12px;
+  border-radius: 20px;
+  margin: 16px 0 0 20px;
+}
+
+.role-chip--master   { background: rgba(255,107,53,0.12); color: var(--orange); }
+.role-chip--manager  { background: rgba(100,160,255,0.12); color: #64a0ff; }
+.role-chip--super    { background: rgba(196,98,58,0.15); color: var(--terracotta); }
+
+/* ── Management grid (2-column) ──────────────────────────────────────────── */
+
+.mgmt-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  padding: 0 16px;
+}
+
+.mgmt-card {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  padding: 16px;
+  text-decoration: none;
+  color: inherit;
+  transition: background 0.2s, border-color 0.2s;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.mgmt-card:active {
+  background: var(--bg-card-2);
+  border-color: var(--border-active);
+}
+
+.mgmt-icon  { font-size: 24px; margin-bottom: 4px; }
+.mgmt-label { font-size: 14px; font-weight: 700; color: var(--text-primary); }
+.mgmt-desc  { font-size: 11px; color: var(--text-muted); line-height: 1.4; }
+
+/* Action card variant */
+.card--action {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.card--action .card-icon {
+  margin-bottom: 4px;
+}
+
+/* ── Admin tile grid (4-column) ──────────────────────────────────────────── */
+
+.admin-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+  padding: 0 16px;
+}
+
+.admin-tile {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  padding: 16px 8px;
+  text-decoration: none;
+  color: inherit;
+  transition: background 0.2s, border-color 0.2s;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.admin-tile:active {
+  background: var(--bg-card-2);
+  border-color: var(--border-active);
+}
+
+.admin-tile-icon  { font-size: 22px; }
+.admin-tile-label { font-size: 10px; font-weight: 600; color: var(--text-secondary); text-align: center; }
+
+/* ── Trial / waiting screen ──────────────────────────────────────────────── */
+
+.trial-screen {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 32px;
+  gap: 16px;
+  text-align: center;
+}
+
+.trial-icon  { font-size: 56px; }
+.trial-title { font-size: 22px; font-weight: 700; color: var(--text-primary); margin: 0; }
+.trial-text  { font-size: 14px; color: var(--text-secondary); line-height: 1.6; margin: 0; }
+
+.trial-info {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  padding: 16px 20px;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.trial-info-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 13px;
+}
+
+.trial-info-key { color: var(--text-muted); }
+.trial-info-val { font-weight: 600; color: var(--text-primary); }
+
 /* ── Skeleton loader ─────────────────────────────────────────────────────── */
 
 @keyframes shimmer {

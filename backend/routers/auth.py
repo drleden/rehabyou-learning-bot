@@ -2,6 +2,7 @@
 Authentication endpoints.
 
 POST /api/auth/telegram  — Telegram Mini App (initData HMAC validation)
+POST /api/auth/phone     — Browser fallback login by phone number
 POST /api/auth/refresh   — Refresh access token via refresh token
 GET  /api/auth/me        — Current user info (requires access token)
 """
@@ -32,6 +33,10 @@ router = APIRouter()
 
 class TelegramAuthRequest(BaseModel):
     init_data: str  # raw Telegram WebApp.initData string
+
+
+class PhoneAuthRequest(BaseModel):
+    phone: str  # e.g. "+79001234567"
 
 
 class RefreshRequest(BaseModel):
@@ -134,6 +139,53 @@ async def telegram_auth(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Account is blocked",
         )
+
+    return _build_token_response(user)
+
+
+@router.post(
+    "/phone",
+    response_model=TokenResponse,
+    summary="Авторизация по номеру телефона (браузер)",
+    description=(
+        "Браузерный запасной вход. "
+        "Ищет пользователя по номеру телефона и выдаёт JWT. "
+        "Применяется когда Telegram Mini App недоступен."
+    ),
+)
+async def phone_auth(
+    body: PhoneAuthRequest,
+    db: AsyncSession = Depends(get_db),
+):
+    # Normalise: keep digits and leading +
+    phone = "".join(c for c in body.phone if c.isdigit() or c == "+")
+    if len(phone) < 10:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="Некорректный номер телефона",
+        )
+
+    result = await db.execute(select(User).where(User.phone == phone))
+    user = result.scalar_one_or_none()
+
+    if user is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Пользователь с таким номером не найден. Обратитесь к администратору.",
+        )
+    if user.status == UserStatus.fired:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Аккаунт деактивирован",
+        )
+    if user.status == UserStatus.blocked:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Аккаунт заблокирован",
+        )
+
+    user.last_active_at = datetime.now(timezone.utc)
+    await db.commit()
 
     return _build_token_response(user)
 

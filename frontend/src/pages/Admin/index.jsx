@@ -1,4 +1,4 @@
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, Navigate } from "react-router-dom";
 import Staff from "./Staff";
 import StaffDetail from "./StaffDetail";
 import Courses from "./Courses";
@@ -7,12 +7,10 @@ import AcademyAdmin from "./Academy";
 import Analytics from "./Analytics";
 import AdminStub from "./Stub";
 
-function Dashboard() { return <AdminStub title="Панель управления" icon="🏠" />; }
-
 export default function Admin() {
   return (
     <Routes>
-      <Route index element={<Dashboard />} />
+      <Route index element={<Navigate to="/" replace />} />
       <Route path="staff" element={<Staff />} />
       <Route path="staff/:id" element={<StaffDetail />} />
       <Route path="courses" element={<Courses />} />

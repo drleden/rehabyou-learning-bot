@@ -21,7 +21,7 @@ export default function Stub({ title, icon = "🔧" }) {
         padding: "14px 16px",
         borderBottom: "1px solid var(--border)",
       }}>
-        <Link to="/admin" style={{
+        <Link to="/" style={{
           fontSize: 24,
           color: "var(--text-secondary)",
           textDecoration: "none",
@@ -52,7 +52,7 @@ export default function Stub({ title, icon = "🔧" }) {
         }}>
           Раздел в разработке. Он появится в одном из следующих обновлений.
         </div>
-        <Link to="/admin" style={{
+        <Link to="/" style={{
           marginTop: 8,
           padding: "10px 24px",
           background: "var(--grad-brand)",

@@ -352,7 +352,7 @@ export default function Analytics() {
   return (
     <div className="an-page">
       <header className="an-header">
-        <Link to="/admin" className="an-back">‹</Link>
+        <Link to="/" className="an-back">‹</Link>
         <span className="an-header-title">Аналитика</span>
         <button className="an-digest-btn" onClick={() => setDigestOpen(true)}>
           🤖 ИИ-сводка

@@ -70,7 +70,8 @@ function useCourseProgress() {
 function useAcademyNext() {
   return useQuery({
     queryKey: ["academy-next"],
-    queryFn: () => api.get("/api/academy/schedule?limit=1&upcoming=true").then((r) => r.data?.[0] ?? null),
+    queryFn: () =>
+      api.get("/api/academy/schedule?filter=upcoming").then((r) => r.data?.[0] ?? null),
     placeholderData: null,
     retry: false,
   });
@@ -79,7 +80,11 @@ function useAcademyNext() {
 function useAcademyStats() {
   return useQuery({
     queryKey: ["academy-stats"],
-    queryFn: () => api.get("/api/academy/stats/me").then((r) => r.data),
+    queryFn: () => api.get("/api/academy/my-progress").then((r) => ({
+      completed_classes: r.data.classes_attended,
+      total_classes: r.data.classes_attended,
+      skips: r.data.skip_count,
+    })),
     placeholderData: { completed_classes: 0, total_classes: 0, skips: 0 },
     retry: false,
   });

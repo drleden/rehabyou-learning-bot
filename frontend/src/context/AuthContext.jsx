@@ -1,4 +1,4 @@
-import { createContext, useCallback, useContext, useState } from "react";
+import { createContext, useCallback, useContext, useEffect, useState } from "react";
 
 const AuthContext = createContext(null);
 
@@ -29,6 +29,16 @@ export function AuthProvider({ children }) {
     localStorage.removeItem("access_token");
     localStorage.removeItem("refresh_token");
     localStorage.removeItem("user");
+  }, []);
+
+  // Listen for forced logout dispatched by api.js token refresh failure
+  useEffect(() => {
+    function handleLogout() {
+      setUser(null);
+      setToken(null);
+    }
+    window.addEventListener("auth:logout", handleLogout);
+    return () => window.removeEventListener("auth:logout", handleLogout);
   }, []);
 
   return (

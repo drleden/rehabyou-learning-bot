@@ -266,8 +266,8 @@ async def create_module(
     )
     db.add(module)
     await db.commit()
-    await db.refresh(module)
-    return _module_out(module)
+    # Re-fetch with selectinload so module.lessons is available (avoid MissingGreenlet)
+    return _module_out(await _get_module(module.id, db))
 
 
 @router.patch(

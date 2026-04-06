@@ -549,3 +549,53 @@ async def create_lesson_assignment(
     await db.commit()
     await db.refresh(assignment)
     return {"id": assignment.id, "lesson_id": lesson_id, "description": assignment.description, "min_words": assignment.min_words}
+
+
+@router.get(
+    "/lessons/{lesson_id}/test",
+    summary="Получить тест урока с вопросами",
+)
+async def get_lesson_test(
+    lesson_id: int,
+    _: User = Depends(require_roles(*MANAGE)),
+    db: AsyncSession = Depends(get_db),
+):
+    result = await db.execute(
+        select(Test).where(Test.lesson_id == lesson_id)
+        .options(selectinload(Test.questions))
+    )
+    test = result.scalar_one_or_none()
+    if test is None:
+        return None
+    qs = sorted(test.questions, key=lambda q: q.position)
+    return {
+        "id": test.id,
+        "lesson_id": test.lesson_id,
+        "pass_threshold": test.pass_threshold,
+        "questions": [
+            {
+                "id": q.id,
+                "question": q.question,
+                "options": q.options,
+                "correct_index": q.correct_index,
+                "position": q.position,
+            }
+            for q in qs
+        ],
+    }
+
+
+@router.get(
+    "/lessons/{lesson_id}/assignment",
+    summary="Получить задание урока",
+)
+async def get_lesson_assignment(
+    lesson_id: int,
+    _: User = Depends(require_roles(*MANAGE)),
+    db: AsyncSession = Depends(get_db),
+):
+    result = await db.execute(select(Assignment).where(Assignment.lesson_id == lesson_id))
+    a = result.scalar_one_or_none()
+    if a is None:
+        return None
+    return {"id": a.id, "lesson_id": lesson_id, "description": a.description, "min_words": a.min_words}

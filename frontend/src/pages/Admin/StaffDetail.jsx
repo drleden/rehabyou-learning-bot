@@ -74,6 +74,16 @@ function usePermissions(userId) {
   });
 }
 
+function usePsychResults(userId) {
+  return useQuery({
+    queryKey: ["staff-psych-results", userId],
+    queryFn: () => api.get(`/api/psych-tests/results/${userId}`).then(r => r.data),
+    enabled: !!userId,
+    placeholderData: [],
+    retry: false,
+  });
+}
+
 function useHistory(userId) {
   return useQuery({
     queryKey: ["staff-perm-history", userId],
@@ -157,6 +167,43 @@ function HistorySection({ userId }) {
 
 // ── Main page ─────────────────────────────────────────────────────────────────
 
+const TEST_ICONS = { "Белбин": "🎭", "MBTI": "🧠", "Выгорание": "🔥" };
+const TEST_COLORS = { "Белбин": "var(--orange)", "MBTI": "#6c8ebf", "Выгорание": "#c4694f" };
+
+function PsychSection({ userId }) {
+  const { data: results = [], isLoading } = usePsychResults(userId);
+  if (isLoading) return <div className="sd-skeleton sd-skeleton--sm" />;
+  if (!results.length) return <p className="sd-empty">Тесты не пройдены</p>;
+  return (
+    <div className="sd-psych-list">
+      {results.map((r) => {
+        const color = TEST_COLORS[r.test_name] ?? "var(--orange)";
+        const icon = TEST_ICONS[r.test_name] ?? "🧪";
+        let scoreLabel = "";
+        if (r.test_name === "MBTI") scoreLabel = r.raw_score?.type ?? "";
+        else if (r.test_name === "Выгорание") scoreLabel = `${r.raw_score?.level ?? ""} · ${r.raw_score?.percent ?? 0}%`;
+        else if (r.test_name === "Белбин") {
+          const top = Object.entries(r.raw_score ?? {}).sort((a, b) => b[1] - a[1])[0];
+          scoreLabel = top ? top[0] : "";
+        }
+        return (
+          <details key={r.id} className="sd-psych-card">
+            <summary className="sd-psych-summary">
+              <span className="sd-psych-icon" style={{ background: color + "22", color }}>{icon}</span>
+              <span className="sd-psych-name">{r.test_name}</span>
+              {scoreLabel && <span className="sd-psych-badge" style={{ background: color + "22", color }}>{scoreLabel}</span>}
+              <span className="sd-psych-date">{fmtDate(r.created_at)}</span>
+            </summary>
+            {r.ai_interpretation && (
+              <div className="sd-psych-interp">{r.ai_interpretation}</div>
+            )}
+          </details>
+        );
+      })}
+    </div>
+  );
+}
+
 export default function StaffDetail() {
   const { id } = useParams();
   const { data: user, isLoading: userLoading, isError } = useStaffUser(id);
@@ -219,6 +266,12 @@ export default function StaffDetail() {
                 <PermissionRow key={p.service_id} perm={p} userId={id} />
               ))
         }
+      </div>
+
+      {/* Psych test results */}
+      <div className="sd-section-label">Психологические тесты</div>
+      <div className="sd-perm-card">
+        <PsychSection userId={id} />
       </div>
 
       {/* History */}

@@ -187,9 +187,10 @@ function AcademyCard({ nextClass, stats, isLoading }) {
 
 function QuickNav() {
   const items = [
-    { to: "/courses",   icon: "📚", label: "Мои курсы" },
-    { to: "/questions", icon: "💬", label: "Вопросы" },
-    { to: "/profile",   icon: "👤", label: "Профиль" },
+    { to: "/courses",      icon: "📚", label: "Мои курсы" },
+    { to: "/psych-tests",  icon: "🧠", label: "Тесты" },
+    { to: "/questions",    icon: "💬", label: "Вопросы" },
+    { to: "/profile",      icon: "👤", label: "Профиль" },
   ];
   return (
     <nav className="quick-nav">
@@ -245,6 +246,7 @@ function ManagerDashboard({ user }) {
     { to: "/admin/academy",   icon: "🎓", label: "Академия",   desc: "Расписание занятий" },
     { to: "/admin/analytics", icon: "📊", label: "Аналитика",  desc: "Прогресс и статистика" },
     { to: "/ai-assistant",    icon: "🤖", label: "ИИ-ассист.", desc: "Анализ и рекомендации" },
+    { to: "/psych-tests",     icon: "🧠", label: "Психотесты", desc: "Диагностика команды" },
   ];
 
   return (
@@ -301,6 +303,7 @@ function SuperadminDashboard({ user }) {
     { to: "/admin/academy",      icon: "🎓", label: "Академия"   },
     { to: "/admin/analytics",    icon: "📊", label: "Аналитика"  },
     { to: "/ai-assistant",       icon: "🤖", label: "ИИ-ассист." },
+    { to: "/psych-tests",        icon: "🧠", label: "Психотесты" },
     { to: "/admin/services",     icon: "🔑", label: "Допуски"    },
     { to: "/admin/settings",     icon: "⚙️",  label: "Настройки" },
     { to: "/admin/subscriptions",icon: "💳", label: "Подписки"   },

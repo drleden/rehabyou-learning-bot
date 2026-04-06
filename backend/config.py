@@ -1,19 +1,18 @@
 from pydantic_settings import BaseSettings, SettingsConfigDict
-from typing import list
 
 
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 
     # Database
-    DATABASE_URL: str
+    DATABASE_URL: str = "postgresql+asyncpg://rehabyou:changeme@db:5432/rehabyou"
 
     # Telegram
-    TELEGRAM_BOT_TOKEN: str
+    TELEGRAM_BOT_TOKEN: str = ""
     SUPERADMIN_TELEGRAM_IDS: str = ""
 
     # Claude API
-    ANTHROPIC_API_KEY: str
+    ANTHROPIC_API_KEY: str = ""
     CLAUDE_MODEL: str = "claude-sonnet-4-6"
 
     # Yandex Object Storage
@@ -36,9 +35,11 @@ class Settings(BaseSettings):
     BITRIX24_WEBHOOK_URL: str = ""
 
     # App
-    SECRET_KEY: str
+    SECRET_KEY: str = "change-me-in-production"
     APP_ENV: str = "development"
     APP_DOMAIN: str = "learn.rehabyou.site"
+    # JSON array string or single origin
+    BACKEND_CORS_ORIGINS: str = '["http://localhost:3000"]'
 
     @property
     def superadmin_ids(self) -> list[int]:

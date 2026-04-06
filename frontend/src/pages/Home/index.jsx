@@ -187,9 +187,10 @@ function AcademyCard({ nextClass, stats, isLoading }) {
 
 function QuickNav() {
   const items = [
-    { to: "/courses",   icon: "📚", label: "Мои курсы" },
-    { to: "/questions", icon: "💬", label: "Вопросы" },
-    { to: "/profile",   icon: "👤", label: "Профиль" },
+    { to: "/courses",      icon: "📚", label: "Мои курсы" },
+    { to: "/psych-tests",  icon: "🧠", label: "Тесты" },
+    { to: "/questions",    icon: "💬", label: "Вопросы" },
+    { to: "/profile",      icon: "👤", label: "Профиль" },
   ];
   return (
     <nav className="quick-nav">
@@ -240,10 +241,12 @@ function MasterDashboard({ user }) {
 /** Admin / manager — management dashboard */
 function ManagerDashboard({ user }) {
   const mgmtLinks = [
-    { to: "/admin/staff",   icon: "👥", label: "Сотрудники", desc: "Управление командой",  ready: true },
-    { to: "/admin/courses", icon: "📚", label: "Курсы",      desc: "Контент и назначение", ready: true },
-    { to: null,             icon: "🎓", label: "Академия",   desc: "Расписание занятий",   ready: false },
-    { to: null,             icon: "📊", label: "Аналитика",  desc: "Прогресс и статистика",ready: false },
+    { to: "/admin/staff",     icon: "👥", label: "Сотрудники", desc: "Управление командой" },
+    { to: "/admin/courses",   icon: "📚", label: "Курсы",      desc: "Контент и назначение" },
+    { to: "/admin/academy",   icon: "🎓", label: "Академия",   desc: "Расписание занятий" },
+    { to: "/admin/analytics", icon: "📊", label: "Аналитика",  desc: "Прогресс и статистика" },
+    { to: "/ai-assistant",    icon: "🤖", label: "ИИ-ассист.", desc: "Анализ и рекомендации" },
+    { to: "/psych-tests",     icon: "🧠", label: "Психотесты", desc: "Диагностика команды" },
   ];
 
   return (
@@ -265,22 +268,13 @@ function ManagerDashboard({ user }) {
 
       <div className="section-label">Управление</div>
       <div className="mgmt-grid">
-        {mgmtLinks.map(({ to, icon, label, desc, ready }) =>
-          ready ? (
-            <Link key={label} to={to} className="mgmt-card">
-              <span className="mgmt-icon">{icon}</span>
-              <span className="mgmt-label">{label}</span>
-              <span className="mgmt-desc">{desc}</span>
-            </Link>
-          ) : (
-            <button key={label} className="mgmt-card" style={{ opacity: 0.5, cursor: "default" }}
-              onClick={() => alert("В разработке")}>
-              <span className="mgmt-icon">{icon}</span>
-              <span className="mgmt-label">{label}</span>
-              <span className="mgmt-desc">{desc}</span>
-            </button>
-          )
-        )}
+        {mgmtLinks.map(({ to, icon, label, desc }) => (
+          <Link key={label} to={to} className="mgmt-card">
+            <span className="mgmt-icon">{icon}</span>
+            <span className="mgmt-label">{label}</span>
+            <span className="mgmt-desc">{desc}</span>
+          </Link>
+        ))}
       </div>
 
       <div className="section-label" style={{ marginTop: 24 }}>Быстрые действия</div>
@@ -302,16 +296,21 @@ function ManagerDashboard({ user }) {
 
 /** Superadmin / owner — full control */
 function SuperadminDashboard({ user }) {
-  // ready = implemented; stub = show "В разработке" toast on tap
   const adminLinks = [
-    { to: "/admin/staff",   icon: "👥", label: "Сотрудники",  ready: true  },
-    { to: "/admin/courses", icon: "📚", label: "Курсы",       ready: true  },
-    { to: null,             icon: "🎓", label: "Академия",    ready: false },
-    { to: null,             icon: "📊", label: "Аналитика",   ready: false },
-    { to: null,             icon: "💳", label: "Подписки",    ready: false },
-    { to: null,             icon: "🤖", label: "ИИ-настройки",ready: false },
-    { to: null,             icon: "🏢", label: "Орг-ции",     ready: false },
-    { to: null,             icon: "🔍", label: "Аудит",       ready: false },
+    { to: "/admin/staff",        icon: "👥", label: "Сотрудники"  },
+    { to: "/admin/courses",      icon: "📚", label: "Курсы"       },
+    { to: "/admin/academy",      icon: "🎓", label: "Академия"    },
+    { to: "/admin/analytics",    icon: "📊", label: "Аналитика"   },
+    { to: "/admin/subscriptions",icon: "💳", label: "Подписки"    },
+    { to: "/ai-assistant",       icon: "🤖", label: "ИИ-ассистент"},
+    { to: "/admin/settings",     icon: "🏢", label: "Организации" },
+    { to: "/admin/audit",        icon: "📋", label: "Аудит"       },
+  ];
+
+  const quickLinks = [
+    { to: "/psych-tests",     icon: "🧠", label: "Психотесты" },
+    { to: "/admin/analytics", icon: "📊", label: "Дайджест"   },
+    { to: "/profile",         icon: "👤", label: "Профиль"    },
   ];
 
   return (
@@ -333,21 +332,22 @@ function SuperadminDashboard({ user }) {
 
       <div className="section-label">Управление платформой</div>
       <div className="admin-grid">
-        {adminLinks.map(({ to, icon, label, ready }) =>
-          ready ? (
-            <Link key={label} to={to} className="admin-tile">
-              <span className="admin-tile-icon">{icon}</span>
-              <span className="admin-tile-label">{label}</span>
-            </Link>
-          ) : (
-            <button key={label} className="admin-tile admin-tile--wip"
-              onClick={() => alert("В разработке")}>
-              <span className="admin-tile-icon">{icon}</span>
-              <span className="admin-tile-label">{label}</span>
-            </button>
-          )
-        )}
+        {adminLinks.map(({ to, icon, label }) => (
+          <Link key={to} to={to} className="admin-tile">
+            <span className="admin-tile-icon">{icon}</span>
+            <span className="admin-tile-label">{label}</span>
+          </Link>
+        ))}
       </div>
+
+      <nav className="quick-nav quick-nav--scroll">
+        {quickLinks.map(({ to, icon, label }) => (
+          <Link key={to} to={to} className="quick-nav-item">
+            <span className="quick-nav-icon">{icon}</span>
+            <span className="quick-nav-label">{label}</span>
+          </Link>
+        ))}
+      </nav>
     </div>
   );
 }

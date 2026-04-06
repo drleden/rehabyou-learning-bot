@@ -143,19 +143,40 @@
 .sc {
   display: flex;
   align-items: center;
-  gap: 14px;
-  padding: 14px 20px;
-  background: none;
-  border: none;
   border-bottom: 1px solid rgba(255,255,255,0.04);
-  cursor: pointer;
-  text-align: left;
   width: 100%;
+}
+
+.sc--row {
+  gap: 0;
+}
+
+.sc-link {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 10px 14px 20px;
+  flex: 1;
+  min-width: 0;
+  text-decoration: none;
   transition: background 0.15s;
   -webkit-tap-highlight-color: transparent;
 }
 
-.sc:active { background: rgba(255,255,255,0.03); }
+.sc-link:active { background: rgba(255,255,255,0.03); }
+
+.sc-action-btn {
+  background: none;
+  border: none;
+  color: #666;
+  font-size: 20px;
+  padding: 14px 16px;
+  cursor: pointer;
+  flex-shrink: 0;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.sc-action-btn:active { color: #c4694f; }
 
 .sc--skeleton {
   height: 68px;

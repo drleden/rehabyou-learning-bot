@@ -13,6 +13,8 @@ import Profile from "./pages/Profile";
 import AIAssistant from "./pages/AIAssistant";
 import Admin from "./pages/Admin";
 import Login from "./pages/Login";
+import PageStub from "./pages/Stub";
+import PsychTestList, { PsychTestTake, PsychTestResults } from "./pages/PsychTests";
 
 // ── Splash screen shown while auth is resolving ───────────────────────────────
 
@@ -92,9 +94,15 @@ function AppInner() {
       <Route path="/courses"        element={<MyCourses />} />
       <Route path="/courses/:id"    element={<CourseView />} />
       <Route path="/lessons/:id"    element={<LessonView />} />
-      <Route path="/academy/*"      element={<Academy />} />
+      <Route path="/academy"         element={<Academy />} />
       <Route path="/profile/*"      element={<Profile />} />
-      <Route path="/ai"             element={<AIAssistant />} />
+      <Route path="/ai"              element={<AIAssistant />} />
+      <Route path="/ai-assistant"   element={<AIAssistant />} />
+      <Route path="/psych-tests"         element={<PsychTestList />} />
+      <Route path="/psych-tests/results" element={<PsychTestResults />} />
+      <Route path="/psych-tests/:id"     element={<PsychTestTake />} />
+      <Route path="/questions"      element={<PageStub title="Вопросы" icon="💬" />} />
+      <Route path="/rating"         element={<PageStub title="Рейтинг" icon="🏆" />} />
       <Route path="/admin/*"        element={<Admin />} />
       <Route path="*"               element={<Navigate to="/" replace />} />
     </Routes>

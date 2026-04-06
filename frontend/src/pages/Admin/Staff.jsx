@@ -237,7 +237,7 @@ function ActionSheet({ user, onClose }) {
 
 // ── Employee card ─────────────────────────────────────────────────────────────
 
-function EmployeeCard({ user, onClick }) {
+function EmployeeCard({ user, onAction }) {
   const statusCls = {
     active:  "sc-status--active",
     trial:   "sc-status--trial",
@@ -246,17 +246,20 @@ function EmployeeCard({ user, onClick }) {
   }[user.status] ?? "";
 
   return (
-    <button className="sc" onClick={() => onClick(user)}>
-      <div className="sc-avatar">{initials(user)}</div>
-      <div className="sc-body">
-        <span className="sc-name">{fullName(user)}</span>
-        <span className="sc-role">{roleBadge(user.roles)}</span>
-        {user.phone && <span className="sc-phone">{user.phone}</span>}
-      </div>
-      <span className={`sc-status ${statusCls}`}>
-        {STATUS_LABELS[user.status] ?? user.status}
-      </span>
-    </button>
+    <div className="sc sc--row">
+      <Link to={`/admin/staff/${user.id}`} className="sc-link">
+        <div className="sc-avatar">{initials(user)}</div>
+        <div className="sc-body">
+          <span className="sc-name">{fullName(user)}</span>
+          <span className="sc-role">{roleBadge(user.roles)}</span>
+          {user.phone && <span className="sc-phone">{user.phone}</span>}
+        </div>
+        <span className={`sc-status ${statusCls}`}>
+          {STATUS_LABELS[user.status] ?? user.status}
+        </span>
+      </Link>
+      <button className="sc-action-btn" onClick={() => onAction(user)}>⋯</button>
+    </div>
   );
 }
 
@@ -326,7 +329,7 @@ export default function Staff() {
           : staff.length === 0
             ? <p className="staff-empty">Никого не найдено</p>
             : staff.map((u) => (
-                <EmployeeCard key={u.id} user={u} onClick={setSelected} />
+                <EmployeeCard key={u.id} user={u} onAction={setSelected} />
               ))
         }
       </div>

@@ -1,8 +1,8 @@
 import { Routes, Route } from "react-router-dom";
 import Staff from "./Staff";
+import Courses from "./Courses";
 
 function Dashboard() { return <h2 style={{ color: "#fff", padding: 24 }}>Панель управления</h2>; }
-function Courses() { return <h2 style={{ color: "#fff", padding: 24 }}>Контент</h2>; }
 function AcademyAdmin() { return <h2 style={{ color: "#fff", padding: 24 }}>Академия</h2>; }
 function ServicesAdmin() { return <h2 style={{ color: "#fff", padding: 24 }}>Допуски к услугам</h2>; }
 function Subscriptions() { return <h2 style={{ color: "#fff", padding: 24 }}>Подписки и промокоды</h2>; }

@@ -375,6 +375,26 @@ async def update_lesson(
     return _lesson_out(lesson)
 
 
+@router.patch(
+    "/lessons/{lesson_id}/publish",
+    response_model=LessonOut,
+    summary="Опубликовать / снять с публикации урок",
+)
+async def toggle_publish_lesson(
+    lesson_id: int,
+    _: User = Depends(require_roles(*MANAGE)),
+    db: AsyncSession = Depends(get_db),
+):
+    lesson = await _get_lesson(lesson_id, db)
+    lesson.status = (
+        LessonStatus.draft if lesson.status == LessonStatus.published
+        else LessonStatus.published
+    )
+    await db.commit()
+    await db.refresh(lesson)
+    return _lesson_out(lesson)
+
+
 @router.delete(
     "/lessons/{lesson_id}",
     status_code=status.HTTP_204_NO_CONTENT,

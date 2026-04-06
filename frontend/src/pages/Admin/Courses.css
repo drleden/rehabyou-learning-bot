@@ -82,6 +82,18 @@
   border-bottom: 1px solid rgba(255,255,255,0.05);
 }
 
+.course-card--link {
+  display: block;
+  text-decoration: none;
+  color: inherit;
+  transition: background 0.15s;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.course-card--link:active {
+  background: rgba(255,255,255,0.03);
+}
+
 .course-card--skeleton {
   height: 72px;
   background: linear-gradient(90deg, #111 25%, #181818 50%, #111 75%);

@@ -1,6 +1,7 @@
 import { Routes, Route } from "react-router-dom";
 import Staff from "./Staff";
 import Courses from "./Courses";
+import CourseDetail from "./CourseDetail";
 
 function Dashboard() { return <h2 style={{ color: "#fff", padding: 24 }}>Панель управления</h2>; }
 function AcademyAdmin() { return <h2 style={{ color: "#fff", padding: 24 }}>Академия</h2>; }
@@ -15,7 +16,8 @@ export default function Admin() {
     <Routes>
       <Route index element={<Dashboard />} />
       <Route path="staff/*" element={<Staff />} />
-      <Route path="courses/*" element={<Courses />} />
+      <Route path="courses" element={<Courses />} />
+      <Route path="courses/:id" element={<CourseDetail />} />
       <Route path="academy/*" element={<AcademyAdmin />} />
       <Route path="services/*" element={<ServicesAdmin />} />
       <Route path="subscriptions/*" element={<Subscriptions />} />

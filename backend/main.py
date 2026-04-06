@@ -19,6 +19,7 @@ from routers import (
     auth,
     courses,
     integrations,
+    learning,
     psych_tests,
     services,
     subscriptions,
@@ -134,6 +135,7 @@ API = "/api"
 app.include_router(auth.router,         prefix=f"{API}/auth",          tags=["auth"])
 app.include_router(users.router,        prefix=f"{API}/users",         tags=["users"])
 app.include_router(courses.router,      prefix=f"{API}/courses",       tags=["courses"])
+app.include_router(learning.router,     prefix=f"{API}/learning",      tags=["learning"])
 app.include_router(academy.router,      prefix=f"{API}/academy",       tags=["academy"])
 app.include_router(services.router,     prefix=f"{API}/services",      tags=["services"])
 app.include_router(psych_tests.router,  prefix=f"{API}/psych-tests",   tags=["psych_tests"])

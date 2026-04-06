@@ -25,8 +25,8 @@ from sqlalchemy.orm import selectinload
 from database import get_db
 from deps import get_current_user, require_roles
 from models.courses import (
-    Course, CourseRole, Lesson, LessonStatus, LessonVersion,
-    Module, UserProgress,
+    Assignment, Course, CourseRole, Lesson, LessonStatus, LessonVersion,
+    Module, Test, TestQuestion, UserProgress,
 )
 from models.users import User
 
@@ -417,3 +417,135 @@ async def delete_lesson(
     await db.delete(lesson)
     await db.commit()
     logger.info("Lesson deleted (archived progress): lesson_id=%s", lesson_id)
+
+
+# ── Test management (admin) ───────────────────────────────────────────────────
+
+class CreateTestIn(BaseModel):
+    pass_threshold: Optional[float] = 0.95
+
+class CreateQuestionIn(BaseModel):
+    question: str
+    options: list[str]
+    correct_index: int
+    position: Optional[int] = None
+
+class TestAdminOut(BaseModel):
+    id: int
+    lesson_id: int
+    pass_threshold: float
+    questions: list[dict]
+    class Config: from_attributes = True
+
+
+@router.post(
+    "/lessons/{lesson_id}/test",
+    status_code=status.HTTP_201_CREATED,
+    summary="Создать тест для урока (или вернуть существующий)",
+)
+async def create_lesson_test(
+    lesson_id: int,
+    body: CreateTestIn,
+    _: User = Depends(require_roles(*MANAGE)),
+    db: AsyncSession = Depends(get_db),
+):
+    lesson = await _get_lesson(lesson_id, db)
+
+    result = await db.execute(
+        select(Test).where(Test.lesson_id == lesson_id)
+        .options(selectinload(Test.questions))
+    )
+    test = result.scalar_one_or_none()
+    if test is None:
+        test = Test(lesson_id=lesson_id, pass_threshold=body.pass_threshold)
+        db.add(test)
+        await db.commit()
+        await db.refresh(test)
+
+    return {"id": test.id, "lesson_id": test.lesson_id, "pass_threshold": test.pass_threshold, "questions": []}
+
+
+@router.post(
+    "/tests/{test_id}/questions",
+    status_code=status.HTTP_201_CREATED,
+    summary="Добавить вопрос к тесту",
+)
+async def add_test_question(
+    test_id: int,
+    body: CreateQuestionIn,
+    _: User = Depends(require_roles(*MANAGE)),
+    db: AsyncSession = Depends(get_db),
+):
+    result = await db.execute(
+        select(Test).where(Test.id == test_id).options(selectinload(Test.questions))
+    )
+    test = result.scalar_one_or_none()
+    if test is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Test not found")
+
+    position = body.position if body.position is not None else len(test.questions)
+    q = TestQuestion(
+        test_id=test_id,
+        question=body.question,
+        options=body.options,
+        correct_index=body.correct_index,
+        position=position,
+    )
+    db.add(q)
+    await db.commit()
+    await db.refresh(q)
+    return {"id": q.id, "question": q.question, "options": q.options, "correct_index": q.correct_index, "position": q.position}
+
+
+@router.delete(
+    "/tests/questions/{question_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+    summary="Удалить вопрос теста",
+)
+async def delete_test_question(
+    question_id: int,
+    _: User = Depends(require_roles(*MANAGE)),
+    db: AsyncSession = Depends(get_db),
+):
+    result = await db.execute(select(TestQuestion).where(TestQuestion.id == question_id))
+    q = result.scalar_one_or_none()
+    if q is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Question not found")
+    await db.delete(q)
+    await db.commit()
+
+
+# ── Assignment management (admin) ─────────────────────────────────────────────
+
+class CreateAssignmentIn(BaseModel):
+    description: str
+    min_words: Optional[int] = 50
+
+
+@router.post(
+    "/lessons/{lesson_id}/assignment",
+    status_code=status.HTTP_201_CREATED,
+    summary="Создать задание для урока",
+)
+async def create_lesson_assignment(
+    lesson_id: int,
+    body: CreateAssignmentIn,
+    _: User = Depends(require_roles(*MANAGE)),
+    db: AsyncSession = Depends(get_db),
+):
+    await _get_lesson(lesson_id, db)
+
+    result = await db.execute(select(Assignment).where(Assignment.lesson_id == lesson_id))
+    existing = result.scalar_one_or_none()
+    if existing:
+        existing.description = body.description
+        existing.min_words = body.min_words
+        await db.commit()
+        await db.refresh(existing)
+        return {"id": existing.id, "lesson_id": lesson_id, "description": existing.description, "min_words": existing.min_words}
+
+    assignment = Assignment(lesson_id=lesson_id, description=body.description, min_words=body.min_words)
+    db.add(assignment)
+    await db.commit()
+    await db.refresh(assignment)
+    return {"id": assignment.id, "lesson_id": lesson_id, "description": assignment.description, "min_words": assignment.min_words}

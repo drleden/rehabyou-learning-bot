@@ -5,6 +5,9 @@ import api from "./api";
 
 import Home from "./pages/Home";
 import Course from "./pages/Course";
+import MyCourses from "./pages/MyCourses";
+import CourseView from "./pages/CourseView";
+import LessonView from "./pages/LessonView";
 import Academy from "./pages/Academy";
 import Profile from "./pages/Profile";
 import AIAssistant from "./pages/AIAssistant";
@@ -84,13 +87,16 @@ function AppInner() {
 
   return (
     <Routes>
-      <Route path="/"          element={<Home />} />
-      <Route path="/course/*"  element={<Course />} />
-      <Route path="/academy/*" element={<Academy />} />
-      <Route path="/profile/*" element={<Profile />} />
-      <Route path="/ai"        element={<AIAssistant />} />
-      <Route path="/admin/*"   element={<Admin />} />
-      <Route path="*"          element={<Navigate to="/" replace />} />
+      <Route path="/"               element={<Home />} />
+      <Route path="/course/*"       element={<Course />} />
+      <Route path="/courses"        element={<MyCourses />} />
+      <Route path="/courses/:id"    element={<CourseView />} />
+      <Route path="/lessons/:id"    element={<LessonView />} />
+      <Route path="/academy/*"      element={<Academy />} />
+      <Route path="/profile/*"      element={<Profile />} />
+      <Route path="/ai"             element={<AIAssistant />} />
+      <Route path="/admin/*"        element={<Admin />} />
+      <Route path="*"               element={<Navigate to="/" replace />} />
     </Routes>
   );
 }

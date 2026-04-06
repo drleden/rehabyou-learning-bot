@@ -43,11 +43,24 @@ function Avatar({ user }) {
 
 function useCourseProgress() {
   return useQuery({
-    queryKey: ["course-progress"],
-    queryFn: () => api.get("/api/courses/progress/me").then((r) => r.data),
+    queryKey: ["home-course-progress"],
+    queryFn: async () => {
+      const courses = await api.get("/api/learning/courses").then(r => r.data);
+      if (!courses.length) return null;
+      // Show the first in-progress or first course
+      const active = courses.find(c => c.course_status === "in_progress") ?? courses[0];
+      return {
+        course_title: active.title,
+        module_title: "",
+        completed: active.completed,
+        total: active.total,
+        percent: active.percent,
+        next_lesson_title: null,
+      };
+    },
     placeholderData: {
       course_title: "Базовый курс мастера",
-      module_title: "Модуль 2 — Техники массажа",
+      module_title: "",
       completed: 0, total: 1, percent: 0, next_lesson_title: null,
     },
     retry: false,
@@ -94,7 +107,7 @@ function CourseCard({ progress, isLoading }) {
   const { course_title, module_title, completed, total, percent, next_lesson_title } = progress;
   const done = completed >= total && total > 0;
   return (
-    <Link to="/course" className="card">
+    <Link to="/courses" className="card">
       <div className="card-head">
         <div className="card-icon card-icon--orange">📚</div>
         <span className={`card-badge ${done ? "card-badge--done" : "card-badge--active"}`}>
@@ -169,9 +182,9 @@ function AcademyCard({ nextClass, stats, isLoading }) {
 
 function QuickNav() {
   const items = [
-    { to: "/leaderboard", icon: "🏆", label: "Рейтинг" },
-    { to: "/questions",   icon: "💬", label: "Вопросы" },
-    { to: "/profile",     icon: "👤", label: "Профиль" },
+    { to: "/courses",   icon: "📚", label: "Мои курсы" },
+    { to: "/questions", icon: "💬", label: "Вопросы" },
+    { to: "/profile",   icon: "👤", label: "Профиль" },
   ];
   return (
     <nav className="quick-nav">

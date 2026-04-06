@@ -11,6 +11,7 @@ from config import settings
 from database import engine
 from models import Base  # noqa: F401 — imported so Alembic can see all tables
 from bot import build_application
+from middleware.subscription_check import subscription_check_middleware
 from routers import (
     academy,
     admin,
@@ -113,6 +114,8 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# ── Subscription enforcement ──────────────────────────────────────────────────
+app.middleware("http")(subscription_check_middleware)
 
 # ── Request logging middleware ────────────────────────────────────────────────
 

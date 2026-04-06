@@ -91,6 +91,13 @@ class User(Base):
     organization = relationship("Organization", back_populates="users")
 
 
+class SubscriptionStatus(str, enum.Enum):
+    trial   = "trial"
+    active  = "active"
+    frozen  = "frozen"
+    expired = "expired"
+
+
 class Subscription(Base):
     __tablename__ = "subscriptions"
 
@@ -102,6 +109,7 @@ class Subscription(Base):
     starts_at = Column(DateTime(timezone=True))
     ends_at = Column(DateTime(timezone=True))
     is_active = Column(Boolean, default=True)
+    status = Column(String(30), nullable=False, default=SubscriptionStatus.trial)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
 
@@ -111,6 +119,7 @@ class PromoCode(Base):
     id = Column(Integer, primary_key=True)
     code = Column(String(50), unique=True, nullable=False)
     org_id = Column(Integer, ForeignKey("organizations.id"))
+    discount_percent = Column(Integer, default=0)
     is_used = Column(Boolean, default=False)
     used_by = Column(Integer, ForeignKey("users.id"))
     used_at = Column(DateTime(timezone=True))

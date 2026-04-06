@@ -39,14 +39,5 @@ services:
     depends_on:
       - backend
 
-  bot:
-    build: ./backend
-    restart: unless-stopped
-    env_file: .env
-    command: python bot.py
-    depends_on:
-      db:
-        condition: service_healthy
-
 volumes:
   postgres_data:

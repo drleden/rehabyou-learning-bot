@@ -11,8 +11,17 @@ function PhoneForm({ onSuccess }) {
   const [loading, setLoading] = useState(false);
 
   function formatPhone(raw) {
-    // keep only digits and leading +
-    return raw.replace(/[^\d+]/g, "").slice(0, 12);
+    const digits = raw.replace(/\D/g, ""); // strip everything except digits
+    if (!digits) return "";
+
+    // 8XXXXXXXXXX → +7XXXXXXXXXX
+    if (digits.startsWith("8")) return ("+7" + digits.slice(1)).slice(0, 12);
+    // 9XXXXXXXXX → +79XXXXXXXXX
+    if (digits.startsWith("9")) return ("+7" + digits).slice(0, 12);
+    // 7XXXXXXXXXX or +7XXXXXXXXXX
+    if (digits.startsWith("7")) return ("+" + digits).slice(0, 12);
+    // anything else — prepend + and cap
+    return ("+" + digits).slice(0, 12);
   }
 
   async function handleSubmit(e) {

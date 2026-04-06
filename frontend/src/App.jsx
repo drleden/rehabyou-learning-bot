@@ -13,6 +13,7 @@ import Profile from "./pages/Profile";
 import AIAssistant from "./pages/AIAssistant";
 import Admin from "./pages/Admin";
 import Login from "./pages/Login";
+import PageStub from "./pages/Stub";
 
 // ── Splash screen shown while auth is resolving ───────────────────────────────
 
@@ -95,6 +96,8 @@ function AppInner() {
       <Route path="/academy"         element={<Academy />} />
       <Route path="/profile/*"      element={<Profile />} />
       <Route path="/ai"             element={<AIAssistant />} />
+      <Route path="/questions"      element={<PageStub title="Вопросы" icon="💬" />} />
+      <Route path="/rating"         element={<PageStub title="Рейтинг" icon="🏆" />} />
       <Route path="/admin/*"        element={<Admin />} />
       <Route path="*"               element={<Navigate to="/" replace />} />
     </Routes>

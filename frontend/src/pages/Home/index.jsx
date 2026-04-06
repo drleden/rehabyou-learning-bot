@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "../../context/AuthContext";
 import "../../styles/tokens.css";
@@ -36,6 +36,21 @@ function Avatar({ user }) {
     <Link to="/profile" className="avatar" aria-label="Профиль">
       {getInitials(user)}
     </Link>
+  );
+}
+
+function LogoutIcon() {
+  const { logout } = useAuth();
+  const navigate = useNavigate();
+  return (
+    <button
+      className="home-logout-btn"
+      onClick={() => { logout(); navigate("/login", { replace: true }); }}
+      aria-label="Выйти"
+      title="Выйти"
+    >
+      🚪
+    </button>
   );
 }
 
@@ -216,7 +231,10 @@ function MasterDashboard({ user }) {
     <div className="home">
       <header className="header">
         <span className="logo">Rehab.You</span>
-        <Avatar user={user} />
+        <div className="header-right">
+          <Avatar user={user} />
+          <LogoutIcon />
+        </div>
       </header>
 
       <section className="greeting">
@@ -253,7 +271,10 @@ function ManagerDashboard({ user }) {
     <div className="home">
       <header className="header">
         <span className="logo">Rehab.You</span>
-        <Avatar user={user} />
+        <div className="header-right">
+          <Avatar user={user} />
+          <LogoutIcon />
+        </div>
       </header>
 
       <section className="greeting">
@@ -317,7 +338,10 @@ function SuperadminDashboard({ user }) {
     <div className="home">
       <header className="header">
         <span className="logo">Rehab.You</span>
-        <Avatar user={user} />
+        <div className="header-right">
+          <Avatar user={user} />
+          <LogoutIcon />
+        </div>
       </header>
 
       <section className="greeting">
@@ -358,7 +382,10 @@ function TrialDashboard({ user }) {
     <div className="home">
       <header className="header">
         <span className="logo">Rehab.You</span>
-        <Avatar user={user} />
+        <div className="header-right">
+          <Avatar user={user} />
+          <LogoutIcon />
+        </div>
       </header>
 
       <div className="trial-screen">

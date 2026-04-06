@@ -27,6 +27,12 @@
   color: var(--text-muted);
 }
 
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
 .avatar {
   width: 36px;
   height: 36px;
@@ -41,6 +47,22 @@
   flex-shrink: 0;
   cursor: pointer;
   text-decoration: none;
+}
+
+.home-logout-btn {
+  background: none;
+  border: none;
+  font-size: 20px;
+  cursor: pointer;
+  padding: 4px;
+  line-height: 1;
+  opacity: 0.55;
+  -webkit-tap-highlight-color: transparent;
+  transition: opacity 0.15s;
+}
+
+.home-logout-btn:active {
+  opacity: 1;
 }
 
 /* ── Greeting ────────────────────────────────────────────────────────────── */

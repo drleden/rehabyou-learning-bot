@@ -4,7 +4,7 @@
  * Shows: name, role/status, service permission chips (green/grey),
  * brief learning progress summary.
  */
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "../../context/AuthContext";
 import api from "../../api";
@@ -182,6 +182,24 @@ export default function Profile() {
       <Link to="/courses" className="pf-link-btn">
         Перейти к курсам →
       </Link>
+
+      <LogoutButton />
     </div>
+  );
+}
+
+function LogoutButton() {
+  const { logout } = useAuth();
+  const navigate = useNavigate();
+
+  function handleLogout() {
+    logout();
+    navigate("/login", { replace: true });
+  }
+
+  return (
+    <button className="pf-logout-btn" onClick={handleLogout}>
+      🚪 Выйти
+    </button>
   );
 }

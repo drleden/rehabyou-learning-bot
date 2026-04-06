@@ -249,3 +249,27 @@
   color: var(--text-muted);
   padding: 0 16px 12px;
 }
+
+/* ── Logout button ───────────────────────────────────────────────────────── */
+
+.pf-logout-btn {
+  display: block;
+  width: calc(100% - 32px);
+  margin: 8px 16px 32px;
+  padding: 13px;
+  border: 1.5px solid rgba(224, 80, 80, 0.4);
+  border-radius: var(--r-lg);
+  background: transparent;
+  color: #e05050;
+  font-size: 15px;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.pf-logout-btn:active {
+  background: rgba(224, 80, 80, 0.08);
+  border-color: #e05050;
+}

@@ -20,6 +20,7 @@ from routers import (
     courses,
     integrations,
     learning,
+    notifications,
     psych_tests,
     services,
     subscriptions,
@@ -55,9 +56,22 @@ async def lifespan(_app: FastAPI):
     else:
         logger.warning("TELEGRAM_BOT_TOKEN not set — bot disabled")
 
+    # ── Start background scheduler ────────────────────────────────────────────
+    try:
+        from services.scheduler import start_scheduler
+        start_scheduler()
+    except Exception:
+        logger.exception("Failed to start scheduler — continuing without it")
+
     yield
 
     # ── Graceful shutdown ─────────────────────────────────────────────────────
+    try:
+        from services.scheduler import stop_scheduler
+        stop_scheduler()
+    except Exception:
+        logger.exception("Error stopping scheduler")
+
     if tg_app is not None:
         await tg_app.updater.stop()
         await tg_app.stop()
@@ -139,11 +153,12 @@ app.include_router(learning.router,     prefix=f"{API}/learning",      tags=["le
 app.include_router(academy.router,      prefix=f"{API}/academy",       tags=["academy"])
 app.include_router(services.router,     prefix=f"{API}/services",      tags=["services"])
 app.include_router(psych_tests.router,  prefix=f"{API}/psych-tests",   tags=["psych_tests"])
-app.include_router(ai.router,           prefix=f"{API}/ai",            tags=["ai"])
-app.include_router(subscriptions.router,prefix=f"{API}/subscriptions", tags=["subscriptions"])
-app.include_router(analytics.router,    prefix=f"{API}/analytics",     tags=["analytics"])
-app.include_router(integrations.router, prefix=f"{API}/integrations",  tags=["integrations"])
-app.include_router(admin.router,        prefix=f"{API}/admin",         tags=["admin"])
+app.include_router(ai.router,            prefix=f"{API}/ai",             tags=["ai"])
+app.include_router(notifications.router, prefix=f"{API}/notifications",  tags=["notifications"])
+app.include_router(subscriptions.router, prefix=f"{API}/subscriptions",  tags=["subscriptions"])
+app.include_router(analytics.router,     prefix=f"{API}/analytics",      tags=["analytics"])
+app.include_router(integrations.router,  prefix=f"{API}/integrations",   tags=["integrations"])
+app.include_router(admin.router,         prefix=f"{API}/admin",          tags=["admin"])
 
 
 # ── Health check ──────────────────────────────────────────────────────────────

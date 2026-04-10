@@ -149,11 +149,17 @@
 
 /* Module header */
 
+.cd-module-hd-wrap {
+  display: flex;
+  align-items: center;
+}
+
 .cd-module-hd {
   display: flex;
   align-items: center;
   gap: 8px;
-  width: 100%;
+  flex: 1;
+  min-width: 0;
   padding: 14px 16px;
   background: transparent;
   border: none;
@@ -168,6 +174,19 @@
 .cd-module-hd:active {
   background: var(--bg-card-2);
 }
+
+.cd-module-del {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
+  padding: 4px 10px 4px 4px;
+  color: #555;
+  border-radius: 8px;
+  transition: color 0.15s, background 0.15s;
+  flex-shrink: 0;
+}
+.cd-module-del:active { color: #ff4d4d; background: rgba(255,77,77,0.1); }
 
 .cd-module-arrow {
   font-size: 14px;

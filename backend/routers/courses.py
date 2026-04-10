@@ -439,6 +439,42 @@ async def reorder_lessons(
     return _module_out(await _get_module(module_id, db))
 
 
+@router.delete(
+    "/modules/{module_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+    summary="Удалить модуль со всеми уроками",
+)
+async def delete_module(
+    module_id: int,
+    _: User = Depends(require_roles("superadmin", "manager")),
+    db: AsyncSession = Depends(get_db),
+):
+    await _get_module(module_id, db)  # 404 if not found
+
+    lesson_ids_q   = select(Lesson.id).where(Lesson.module_id == module_id).scalar_subquery()
+    test_ids_q     = select(Test.id).where(Test.lesson_id.in_(lesson_ids_q)).scalar_subquery()
+    assign_ids_q   = select(Assignment.id).where(Assignment.lesson_id.in_(lesson_ids_q)).scalar_subquery()
+    question_ids_q = select(Question.id).where(Question.lesson_id.in_(lesson_ids_q)).scalar_subquery()
+
+    await db.execute(sa_delete(QuestionReply).where(QuestionReply.question_id.in_(question_ids_q)))
+    await db.execute(sa_delete(Question).where(Question.lesson_id.in_(lesson_ids_q)))
+    await db.execute(sa_delete(AssignmentAnswer).where(AssignmentAnswer.assignment_id.in_(assign_ids_q)))
+    await db.execute(sa_delete(Assignment).where(Assignment.lesson_id.in_(lesson_ids_q)))
+    await db.execute(sa_delete(TestAttempt).where(TestAttempt.test_id.in_(test_ids_q)))
+    await db.execute(sa_delete(TestQuestion).where(TestQuestion.test_id.in_(test_ids_q)))
+    await db.execute(sa_delete(Test).where(Test.lesson_id.in_(lesson_ids_q)))
+    await db.execute(sa_delete(LessonVersion).where(LessonVersion.lesson_id.in_(lesson_ids_q)))
+    await db.execute(
+        update(UserProgress)
+        .where(UserProgress.lesson_id.in_(lesson_ids_q))
+        .values(is_archived=True)
+    )
+    await db.execute(sa_delete(Lesson).where(Lesson.module_id == module_id))
+    await db.execute(sa_delete(Module).where(Module.id == module_id))
+    await db.commit()
+    logger.info("Module deleted: id=%s", module_id)
+
+
 # ── Lessons ───────────────────────────────────────────────────────────────────
 
 @router.post(

@@ -61,6 +61,26 @@ function Spinner() {
   return <span className="cd-spinner" />;
 }
 
+function ConfirmModal({ heading, message, onConfirm, onClose, loading }) {
+  return (
+    <div className="cd-overlay" onClick={onClose}>
+      <div className="cd-modal cd-modal--sm" onClick={e => e.stopPropagation()}>
+        <div className="cd-modal-hd">
+          <span className="cd-modal-title">{heading}</span>
+          <button className="cd-close" onClick={onClose}>✕</button>
+        </div>
+        <div className="cd-form">
+          <p className="cd-confirm-text">{message}</p>
+          <button className="cd-btn-danger" onClick={onConfirm} disabled={loading}>
+            {loading ? <Spinner /> : "Да, удалить"}
+          </button>
+          <button className="cd-btn-ghost" onClick={onClose} disabled={loading}>Отмена</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ── Modal: create module ──────────────────────────────────────────────────────
 
 function CreateModuleModal({ courseId, onClose }) {
@@ -458,6 +478,7 @@ function LessonRow({ lesson, courseId, moduleId, lessons }) {
   const [editing,    setEditing]    = useState(false);
   const [testOpen,   setTestOpen]   = useState(false);
   const [assignOpen, setAssignOpen] = useState(false);
+  const [confirmDel, setConfirmDel] = useState(false);
 
   const deleteMut = useMut(
     () => api.delete(`/api/courses/lessons/${lesson.id}`),
@@ -535,11 +556,9 @@ function LessonRow({ lesson, courseId, moduleId, lessons }) {
             className="cd-action-btn cd-action-btn--del"
             title="Удалить"
             disabled={deleteMut.isPending}
-            onClick={() => {
-              if (window.confirm(`Удалить урок «${lesson.title}»?`)) deleteMut.mutate();
-            }}
+            onClick={() => setConfirmDel(true)}
           >
-            {deleteMut.isPending ? "…" : "✕"}
+            {deleteMut.isPending ? "…" : "🗑"}
           </button>
         </div>
       </div>
@@ -547,6 +566,15 @@ function LessonRow({ lesson, courseId, moduleId, lessons }) {
       {editing    && <LessonModal lesson={lesson} moduleId={moduleId} courseId={courseId} onClose={() => setEditing(false)} />}
       {testOpen   && <TestModal lesson={lesson} courseId={courseId} onClose={() => setTestOpen(false)} />}
       {assignOpen && <AssignmentModal lesson={lesson} courseId={courseId} onClose={() => setAssignOpen(false)} />}
+      {confirmDel && (
+        <ConfirmModal
+          heading="Удалить урок?"
+          message={<>Удалить урок <strong>«{lesson.title}»</strong>? Это действие нельзя отменить.</>}
+          onConfirm={() => deleteMut.mutate(null, { onSuccess: () => setConfirmDel(false) })}
+          onClose={() => setConfirmDel(false)}
+          loading={deleteMut.isPending}
+        />
+      )}
     </>
   );
 }
@@ -556,15 +584,26 @@ function LessonRow({ lesson, courseId, moduleId, lessons }) {
 function ModuleBlock({ module, courseId }) {
   const [open, setOpen] = useState(true);
   const [addingLesson, setAddingLesson] = useState(false);
+  const [confirmDel, setConfirmDel] = useState(false);
   const sorted = [...(module.lessons ?? [])].sort((a, b) => a.position - b.position);
+
+  const deleteMut = useMut(
+    () => api.delete(`/api/courses/modules/${module.id}`),
+    [["course", courseId]]
+  );
 
   return (
     <div className="cd-module">
-      <button className="cd-module-hd" onClick={() => setOpen(o => !o)}>
-        <span className="cd-module-arrow">{open ? "▾" : "▸"}</span>
-        <span className="cd-module-title">{module.title}</span>
-        <span className="cd-module-count">{module.lessons?.length ?? 0} ур.</span>
-      </button>
+      <div className="cd-module-hd-wrap">
+        <button className="cd-module-hd" onClick={() => setOpen(o => !o)}>
+          <span className="cd-module-arrow">{open ? "▾" : "▸"}</span>
+          <span className="cd-module-title">{module.title}</span>
+          <span className="cd-module-count">{module.lessons?.length ?? 0} ур.</span>
+        </button>
+        <button className="cd-module-del" onClick={() => setConfirmDel(true)} title="Удалить модуль">
+          🗑
+        </button>
+      </div>
 
       {open && (
         <div className="cd-module-body">
@@ -585,6 +624,15 @@ function ModuleBlock({ module, courseId }) {
 
       {addingLesson && (
         <LessonModal moduleId={module.id} courseId={courseId} onClose={() => setAddingLesson(false)} />
+      )}
+      {confirmDel && (
+        <ConfirmModal
+          heading="Удалить модуль?"
+          message={<>Удалить модуль <strong>«{module.title}»</strong> со всеми уроками? Это действие нельзя отменить.</>}
+          onConfirm={() => deleteMut.mutate(null, { onSuccess: () => setConfirmDel(false) })}
+          onClose={() => setConfirmDel(false)}
+          loading={deleteMut.isPending}
+        />
       )}
     </div>
   );

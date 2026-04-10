@@ -97,6 +97,32 @@ class ReorderIn(BaseModel):
     lesson_ids: list[int]  # ordered list of lesson IDs for this module
 
 
+# ── Import schemas ────────────────────────────────────────────────────────────
+
+class ImportQuestionIn(BaseModel):
+    text: str
+    options: list[str]
+    correct_index: int
+
+class ImportTestIn(BaseModel):
+    questions: list[ImportQuestionIn] = []
+
+class ImportLessonIn(BaseModel):
+    title: str
+    content: Optional[str] = None
+    test: Optional[ImportTestIn] = None
+
+class ImportModuleIn(BaseModel):
+    title: str
+    lessons: list[ImportLessonIn] = []
+
+class ImportCourseIn(BaseModel):
+    title: str
+    description: Optional[str] = None
+    roles: list[str] = []
+    modules: list[ImportModuleIn] = []
+
+
 # ── Helpers ───────────────────────────────────────────────────────────────────
 
 def _lesson_out(l: Lesson) -> LessonOut:
@@ -226,6 +252,81 @@ async def my_progress(
         "total": len(rows) or 1,
         "percent": int(completed / len(rows) * 100) if rows else 0,
         "next_lesson_title": None,
+    }
+
+
+@router.post(
+    "/import",
+    status_code=status.HTTP_201_CREATED,
+    summary="Импортировать курс из JSON",
+)
+async def import_course(
+    body: ImportCourseIn,
+    caller: User = Depends(require_roles(*MANAGE)),
+    db: AsyncSession = Depends(get_db),
+):
+    course = Course(
+        title=body.title,
+        description=body.description,
+        is_active=True,
+        created_by=caller.id,
+    )
+    db.add(course)
+    await db.flush()
+
+    for role in body.roles:
+        db.add(CourseRole(course_id=course.id, role=role))
+
+    lesson_count = 0
+    test_count = 0
+
+    for mod_pos, mod_data in enumerate(body.modules):
+        module = Module(
+            course_id=course.id,
+            title=mod_data.title,
+            position=mod_pos,
+        )
+        db.add(module)
+        await db.flush()
+
+        for les_pos, les_data in enumerate(mod_data.lessons):
+            lesson = Lesson(
+                module_id=module.id,
+                title=les_data.title,
+                content=les_data.content,
+                position=les_pos,
+                status=LessonStatus.published,
+                created_by=caller.id,
+            )
+            db.add(lesson)
+            await db.flush()
+            lesson_count += 1
+
+            if les_data.test and les_data.test.questions:
+                test = Test(lesson_id=lesson.id, pass_threshold=0.95)
+                db.add(test)
+                await db.flush()
+                for q_pos, q in enumerate(les_data.test.questions):
+                    db.add(TestQuestion(
+                        test_id=test.id,
+                        question=q.text,
+                        options=q.options,
+                        correct_index=q.correct_index,
+                        position=q_pos,
+                    ))
+                test_count += 1
+
+    await db.commit()
+    logger.info(
+        "Course imported: id=%s modules=%s lessons=%s tests=%s",
+        course.id, len(body.modules), lesson_count, test_count,
+    )
+    return {
+        "id": course.id,
+        "title": course.title,
+        "modules": len(body.modules),
+        "lessons": lesson_count,
+        "tests": test_count,
     }
 
 

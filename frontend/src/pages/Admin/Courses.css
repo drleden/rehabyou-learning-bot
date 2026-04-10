@@ -148,6 +148,37 @@
   color: #888;
 }
 
+/* ── Confirm dialog ───────────────────────────────────────────────────────── */
+
+.c-confirm-text {
+  font-size: 14px;
+  color: #ccc;
+  line-height: 1.6;
+  margin: 0;
+}
+
+.c-confirm-text strong { color: #f0f0f0; }
+
+.c-btn-danger {
+  background: linear-gradient(135deg, #c0392b, #e74c3c);
+  color: #fff;
+  border: none;
+  border-radius: 14px;
+  padding: 15px;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 50px;
+  transition: opacity 0.2s;
+  font-family: inherit;
+}
+.c-btn-danger:disabled { opacity: 0.6; cursor: not-allowed; }
+.c-btn-danger:active:not(:disabled) { opacity: 0.85; }
+
 /* ── Course list ──────────────────────────────────────────────────────────── */
 
 .courses-list {
@@ -221,6 +252,33 @@
   flex: 1;
   min-width: 0;
 }
+
+.course-card-left--link {
+  text-decoration: none;
+  color: inherit;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.course-card-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.course-del-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 15px;
+  padding: 4px 6px;
+  border-radius: 8px;
+  line-height: 1;
+  color: #666;
+  transition: background 0.15s, color 0.15s;
+  -webkit-tap-highlight-color: transparent;
+}
+.course-del-btn:active { background: rgba(255,77,77,0.12); color: #ff4d4d; }
 
 .course-arrow { font-size: 14px; color: #555; flex-shrink: 0; }
 

@@ -18,15 +18,16 @@ from typing import Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from pydantic import BaseModel
-from sqlalchemy import select, update
+from sqlalchemy import delete as sa_delete, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from database import get_db
 from deps import get_current_user, require_roles
 from models.courses import (
-    Assignment, Course, CourseRole, Lesson, LessonStatus, LessonVersion,
-    Module, Test, TestQuestion, UserProgress,
+    Assignment, AssignmentAnswer, Course, CourseRole, Lesson, LessonStatus,
+    LessonVersion, Module, Question, QuestionReply, Test, TestAttempt,
+    TestQuestion, UserProgress,
 )
 from models.users import User
 
@@ -337,6 +338,45 @@ async def get_course(
     _: User = Depends(get_current_user),
 ):
     return _course_detail(await _get_course(course_id, db, full=True))
+
+
+@router.delete(
+    "/{course_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+    summary="Удалить курс вместе с модулями, уроками и тестами",
+)
+async def delete_course(
+    course_id: int,
+    _: User = Depends(require_roles("superadmin", "manager")),
+    db: AsyncSession = Depends(get_db),
+):
+    await _get_course(course_id, db)  # 404 if not found
+
+    module_ids_q   = select(Module.id).where(Module.course_id == course_id).scalar_subquery()
+    lesson_ids_q   = select(Lesson.id).where(Lesson.module_id.in_(module_ids_q)).scalar_subquery()
+    test_ids_q     = select(Test.id).where(Test.lesson_id.in_(lesson_ids_q)).scalar_subquery()
+    assign_ids_q   = select(Assignment.id).where(Assignment.lesson_id.in_(lesson_ids_q)).scalar_subquery()
+    question_ids_q = select(Question.id).where(Question.lesson_id.in_(lesson_ids_q)).scalar_subquery()
+
+    await db.execute(sa_delete(QuestionReply).where(QuestionReply.question_id.in_(question_ids_q)))
+    await db.execute(sa_delete(Question).where(Question.lesson_id.in_(lesson_ids_q)))
+    await db.execute(sa_delete(AssignmentAnswer).where(AssignmentAnswer.assignment_id.in_(assign_ids_q)))
+    await db.execute(sa_delete(Assignment).where(Assignment.lesson_id.in_(lesson_ids_q)))
+    await db.execute(sa_delete(TestAttempt).where(TestAttempt.test_id.in_(test_ids_q)))
+    await db.execute(sa_delete(TestQuestion).where(TestQuestion.test_id.in_(test_ids_q)))
+    await db.execute(sa_delete(Test).where(Test.lesson_id.in_(lesson_ids_q)))
+    await db.execute(sa_delete(LessonVersion).where(LessonVersion.lesson_id.in_(lesson_ids_q)))
+    await db.execute(
+        update(UserProgress)
+        .where(UserProgress.lesson_id.in_(lesson_ids_q))
+        .values(is_archived=True)
+    )
+    await db.execute(sa_delete(Lesson).where(Lesson.module_id.in_(module_ids_q)))
+    await db.execute(sa_delete(Module).where(Module.course_id == course_id))
+    await db.execute(sa_delete(CourseRole).where(CourseRole.course_id == course_id))
+    await db.execute(sa_delete(Course).where(Course.id == course_id))
+    await db.commit()
+    logger.info("Course deleted: id=%s", course_id)
 
 
 # ── Modules ───────────────────────────────────────────────────────────────────

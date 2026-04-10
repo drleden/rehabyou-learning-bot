@@ -1,5 +1,5 @@
 import { useRef, useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link, useParams, useNavigate } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
@@ -595,8 +595,15 @@ function ModuleBlock({ module, courseId }) {
 export default function CourseDetail() {
   const { id } = useParams();
   const courseId = Number(id);
+  const navigate = useNavigate();
   const { data: course, isLoading, isError } = useCourse(courseId);
   const [addingModule, setAddingModule] = useState(false);
+  const [confirmingDelete, setConfirmingDelete] = useState(false);
+  const deleteMut = useMutation({
+    mutationFn: () => api.delete(`/api/courses/${courseId}`),
+    onSuccess: () => navigate("/admin/courses"),
+  });
+  const [deleteErr, setDeleteErr] = useState(null);
 
   if (isLoading) {
     return (
@@ -631,9 +638,14 @@ export default function CourseDetail() {
       <header className="cd-header">
         <Link to="/admin/courses" className="cd-back">‹</Link>
         <span className="cd-header-title">{course.title}</span>
-        <span className={`cd-status-badge ${course.is_active ? "cd-status-badge--active" : "cd-status-badge--off"}`}>
-          {course.is_active ? "Активен" : "Архив"}
-        </span>
+        <div className="cd-header-right">
+          <span className={`cd-status-badge ${course.is_active ? "cd-status-badge--active" : "cd-status-badge--off"}`}>
+            {course.is_active ? "Активен" : "Архив"}
+          </span>
+          <button className="cd-del-btn" onClick={() => setConfirmingDelete(true)} title="Удалить курс">
+            🗑
+          </button>
+        </div>
       </header>
 
       {course.description && (
@@ -657,6 +669,39 @@ export default function CourseDetail() {
 
       {addingModule && (
         <CreateModuleModal courseId={courseId} onClose={() => setAddingModule(false)} />
+      )}
+
+      {confirmingDelete && (
+        <div className="cd-overlay" onClick={() => setConfirmingDelete(false)}>
+          <div className="cd-modal cd-modal--sm" onClick={e => e.stopPropagation()}>
+            <div className="cd-modal-hd">
+              <span className="cd-modal-title">Удалить курс?</span>
+              <button className="cd-close" onClick={() => setConfirmingDelete(false)}>✕</button>
+            </div>
+            <div className="cd-form">
+              <p className="cd-confirm-text">
+                Удалить <strong>«{course.title}»</strong>?<br />
+                Это действие нельзя отменить — все модули, уроки и тесты будут удалены.
+              </p>
+              {deleteErr && <p className="cd-err">{deleteErr}</p>}
+              <button
+                className="cd-btn-danger"
+                disabled={deleteMut.isPending}
+                onClick={() => {
+                  setDeleteErr(null);
+                  deleteMut.mutate(null, {
+                    onError: e => setDeleteErr(e?.response?.data?.detail ?? "Ошибка удаления"),
+                  });
+                }}
+              >
+                {deleteMut.isPending ? <Spinner /> : "Да, удалить"}
+              </button>
+              <button className="cd-btn-ghost" onClick={() => setConfirmingDelete(false)} disabled={deleteMut.isPending}>
+                Отмена
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

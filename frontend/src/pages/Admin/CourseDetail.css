@@ -62,6 +62,54 @@
 .cd-status-badge--active { background: rgba(80,200,120,0.12); color: #50c878; }
 .cd-status-badge--off    { background: rgba(255,255,255,0.06); color: var(--text-muted); }
 
+.cd-header-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.cd-del-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 16px;
+  padding: 4px 6px;
+  border-radius: 8px;
+  line-height: 1;
+  color: #666;
+  transition: background 0.15s, color 0.15s;
+}
+.cd-del-btn:active { background: rgba(255,77,77,0.12); color: #ff4d4d; }
+
+.cd-btn-danger {
+  background: linear-gradient(135deg, #c0392b, #e74c3c);
+  color: #fff;
+  border: none;
+  border-radius: 14px;
+  padding: 15px;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 50px;
+  transition: opacity 0.2s;
+  font-family: inherit;
+}
+.cd-btn-danger:disabled { opacity: 0.6; cursor: not-allowed; }
+.cd-btn-danger:active:not(:disabled) { opacity: 0.85; }
+
+.cd-confirm-text {
+  font-size: 14px;
+  color: #ccc;
+  line-height: 1.6;
+  margin: 0;
+}
+.cd-confirm-text strong { color: #f0f0f0; }
+
 /* ── Course description ───────────────────────────────────────────────────── */
 
 .cd-course-desc {

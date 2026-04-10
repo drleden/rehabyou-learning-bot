@@ -210,13 +210,47 @@ function CreateCourseModal({ onClose }) {
   );
 }
 
+// ── Confirm delete dialog ─────────────────────────────────────────────────────
+
+function ConfirmDeleteModal({ title, onConfirm, onClose, loading }) {
+  return (
+    <div className="c-overlay" onClick={onClose}>
+      <div className="c-modal c-modal--sm" onClick={e => e.stopPropagation()}>
+        <div className="c-modal-hd">
+          <span className="c-modal-title">Удалить курс?</span>
+          <button className="c-close" onClick={onClose}>✕</button>
+        </div>
+        <div className="c-form">
+          <p className="c-confirm-text">
+            Удалить <strong>«{title}»</strong>?<br />
+            Это действие нельзя отменить — все модули, уроки и тесты будут удалены.
+          </p>
+          <button className="c-btn-danger" onClick={onConfirm} disabled={loading}>
+            {loading ? <Spinner /> : "Да, удалить"}
+          </button>
+          <button className="c-btn-ghost" onClick={onClose} disabled={loading}>
+            Отмена
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ── Course list card ──────────────────────────────────────────────────────────
 
 function CourseListCard({ course }) {
+  const qc = useQueryClient();
+  const [confirming, setConfirming] = useState(false);
+  const deleteMut = useMutation({
+    mutationFn: () => api.delete(`/api/courses/${course.id}`),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["courses"] }),
+  });
+
   return (
-    <Link to={`/admin/courses/${course.id}`} className="course-card course-card--link">
+    <div className="course-card">
       <div className="course-card-hd">
-        <div className="course-card-left">
+        <Link to={`/admin/courses/${course.id}`} className="course-card-left course-card-left--link">
           <span className="course-arrow">▸</span>
           <div>
             <div className="course-name">{course.title}</div>
@@ -225,12 +259,29 @@ function CourseListCard({ course }) {
               {course.roles?.map(r => ROLE_LABELS[r] ?? r).join(", ") || "Нет ролей"}
             </div>
           </div>
+        </Link>
+        <div className="course-card-right">
+          <span className={`course-status ${course.is_active ? "cs--active" : "cs--off"}`}>
+            {course.is_active ? "Активен" : "Архив"}
+          </span>
+          <button
+            className="course-del-btn"
+            onClick={() => setConfirming(true)}
+            title="Удалить курс"
+          >
+            🗑
+          </button>
         </div>
-        <span className={`course-status ${course.is_active ? "cs--active" : "cs--off"}`}>
-          {course.is_active ? "Активен" : "Архив"}
-        </span>
       </div>
-    </Link>
+      {confirming && (
+        <ConfirmDeleteModal
+          title={course.title}
+          onConfirm={() => deleteMut.mutate(null, { onSuccess: () => setConfirming(false) })}
+          onClose={() => setConfirming(false)}
+          loading={deleteMut.isPending}
+        />
+      )}
+    </div>
   );
 }
 

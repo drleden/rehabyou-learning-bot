@@ -10,13 +10,13 @@ GET  /api/auth/view-password/{id}   — View plain-text password (superadmin/ass
 POST /api/auth/refresh              — Refresh access token
 GET  /api/auth/me                   — Current user info
 """
+import bcrypt
 import logging
 import random
 import string
 from datetime import datetime, timezone
 
 from fastapi import APIRouter, Depends, HTTPException, status
-from passlib.context import CryptContext
 from pydantic import BaseModel
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -38,7 +38,13 @@ router = APIRouter()
 # Telegram ID of the assistant (@buyanova_kseniyaa) who has admin-level access
 ASSISTANT_TG_ID = 302817128
 
-pwd_ctx = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
+def hash_password(password: str) -> str:
+    return bcrypt.hashpw(password.encode("utf-8"), bcrypt.gensalt()).decode("utf-8")
+
+
+def verify_password(password: str, hashed: str) -> bool:
+    return bcrypt.checkpw(password.encode("utf-8"), hashed.encode("utf-8"))
 
 
 def _gen_password(length: int = 8) -> str:
@@ -183,7 +189,7 @@ async def login_password(body: PasswordLoginRequest, db: AsyncSession = Depends(
         raise HTTPException(status.HTTP_404_NOT_FOUND, "Пользователь с таким номером не найден")
     if not user.password_hash:
         raise HTTPException(status.HTTP_400_BAD_REQUEST, "Пароль не установлен. Обратитесь к администратору.")
-    if not pwd_ctx.verify(body.password, user.password_hash):
+    if not verify_password(body.password, user.password_hash):
         raise HTTPException(status.HTTP_401_UNAUTHORIZED, "Неверный пароль")
     _check_active(user)
 
@@ -201,13 +207,13 @@ async def set_password(
     if user.password_hash:
         if not body.old_password:
             raise HTTPException(status.HTTP_400_BAD_REQUEST, "Введите текущий пароль")
-        if not pwd_ctx.verify(body.old_password, user.password_hash):
+        if not verify_password(body.old_password, user.password_hash):
             raise HTTPException(status.HTTP_400_BAD_REQUEST, "Неверный текущий пароль")
 
     if len(body.new_password) < 6:
         raise HTTPException(status.HTTP_422_UNPROCESSABLE_ENTITY, "Минимум 6 символов")
 
-    user.password_hash = pwd_ctx.hash(body.new_password)
+    user.password_hash = hash_password(body.new_password)
     user.password_plain = body.new_password
     await db.commit()
     return {"ok": True}
@@ -235,7 +241,7 @@ async def reset_password(
         raise HTTPException(status.HTTP_404_NOT_FOUND, "Пользователь не найден")
 
     new_pwd = _gen_password()
-    target.password_hash = pwd_ctx.hash(new_pwd)
+    target.password_hash = hash_password(new_pwd)
     target.password_plain = new_pwd
     await db.commit()
     return {"password": new_pwd}

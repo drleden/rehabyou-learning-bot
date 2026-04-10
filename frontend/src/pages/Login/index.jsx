@@ -3,65 +3,24 @@ import { useAuth } from "../../context/AuthContext";
 import api from "../../api";
 import "./Login.css";
 
-// ── Phone-only form (Telegram fallback) ──────────────────────────────────────
+// ── Telegram info card ────────────────────────────────────────────────────────
 
-function PhoneForm({ onSuccess }) {
-  const [phone, setPhone] = useState("");
-  const [error, setError] = useState(null);
-  const [loading, setLoading] = useState(false);
-
-  function formatPhone(raw) {
-    const digits = raw.replace(/\D/g, "");
-    if (!digits) return "";
-    if (digits.startsWith("8")) return ("+7" + digits.slice(1)).slice(0, 12);
-    if (digits.startsWith("9")) return ("+7" + digits).slice(0, 12);
-    if (digits.startsWith("7")) return ("+" + digits).slice(0, 12);
-    return ("+" + digits).slice(0, 12);
-  }
-
-  async function handleSubmit(e) {
-    e.preventDefault();
-    if (phone.length < 10) { setError("Введите корректный номер телефона"); return; }
-    setError(null);
-    setLoading(true);
-    try {
-      const { data: tokens } = await api.post("/api/auth/phone", { phone });
-      const { data: profile } = await api.get("/api/auth/me", {
-        headers: { Authorization: `Bearer ${tokens.access_token}` },
-      });
-      onSuccess(profile, tokens.access_token, tokens.refresh_token);
-    } catch (err) {
-      setError(err?.response?.data?.detail ?? "Пользователь не найден. Обратитесь к администратору.");
-    } finally {
-      setLoading(false);
-    }
-  }
-
+function TelegramCard() {
   return (
-    <form className="login-form" onSubmit={handleSubmit} noValidate>
-      <div className="login-field">
-        <label className="login-label" htmlFor="tg-phone">Номер телефона</label>
-        <input
-          id="tg-phone"
-          className="login-input"
-          type="tel"
-          placeholder="+7 900 000 00 00"
-          value={phone}
-          onChange={(e) => setPhone(formatPhone(e.target.value))}
-          inputMode="tel"
-          autoComplete="tel"
-          required
-        />
-      </div>
-      {error && <p className="login-error">{error}</p>}
-      <button className="login-btn" type="submit" disabled={loading}>
-        {loading ? <span className="login-spinner" /> : "Войти"}
-      </button>
-      <p className="login-hint">
-        Используйте номер, зарегистрированный в системе.<br />
-        Или откройте приложение через Telegram.
+    <div className="login-tg-card">
+      <div className="login-tg-card-icon">✈</div>
+      <p className="login-tg-card-text">
+        Войдите через бота в Telegram — авторизация происходит автоматически.
       </p>
-    </form>
+      <a
+        className="login-btn login-btn--tg"
+        href="https://t.me/rehabyoulearn_bot"
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        Открыть @rehabyoulearn_bot
+      </a>
+    </div>
   );
 }
 
@@ -192,7 +151,7 @@ export default function Login({ telegramError }) {
 
         {tab === "password"
           ? <PasswordForm onSuccess={onSuccess} />
-          : <PhoneForm onSuccess={onSuccess} />
+          : <TelegramCard />
         }
       </div>
     </div>

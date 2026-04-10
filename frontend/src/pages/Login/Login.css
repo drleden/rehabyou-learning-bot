@@ -219,6 +219,34 @@
   -webkit-tap-highlight-color: transparent;
 }
 
+/* Telegram info card */
+.login-tg-card {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  padding: 8px 0 4px;
+}
+
+.login-tg-card-icon {
+  font-size: 48px;
+  line-height: 1;
+}
+
+.login-tg-card-text {
+  font-size: 14px;
+  color: #aaa;
+  text-align: center;
+  margin: 0;
+  line-height: 1.6;
+}
+
+.login-btn--tg {
+  background: linear-gradient(135deg, #2b9ef5 0%, #229ed9 100%);
+  text-decoration: none;
+}
+
 /* Telegram error block */
 .login-tg-error {
   width: 100%;

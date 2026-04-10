@@ -163,9 +163,10 @@ function AppInner() {
     }
 
     // Telegram Mini App → auto-authenticate
-    const initData = window.Telegram.WebApp.initData;
-    window.Telegram.WebApp.ready();
-    window.Telegram.WebApp.expand();
+    const tg = window.Telegram?.WebApp;
+    const initData = tg?.initData ?? "";
+    tg?.ready();
+    tg?.expand();
 
     api
       .post("/api/auth/telegram", { init_data: initData })

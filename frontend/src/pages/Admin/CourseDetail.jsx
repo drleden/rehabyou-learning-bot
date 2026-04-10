@@ -1,8 +1,21 @@
 import { useRef, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import ReactQuill from "react-quill";
+import "react-quill/dist/quill.snow.css";
 import api from "../../api";
 import "./CourseDetail.css";
+
+const QUILL_MODULES = {
+  toolbar: [
+    [{ header: [2, 3, false] }],
+    ["bold", "italic"],
+    [{ list: "ordered" }, { list: "bullet" }],
+    ["blockquote"],
+  ],
+};
+
+const QUILL_FORMATS = ["header", "bold", "italic", "list", "blockquote"];
 
 // ── API hooks ─────────────────────────────────────────────────────────────────
 
@@ -131,8 +144,16 @@ function LessonModal({ moduleId, lesson, courseId, onClose }) {
             value={form.title} onChange={e => setForm(f => ({ ...f, title: e.target.value }))} autoFocus />
 
           <label className="cd-label">Текст урока</label>
-          <textarea className="cd-input cd-textarea" rows={5} placeholder="Содержимое урока…"
-            value={form.content} onChange={e => setForm(f => ({ ...f, content: e.target.value }))} />
+          <div className="cd-quill-wrap">
+            <ReactQuill
+              theme="snow"
+              value={form.content}
+              onChange={(val) => setForm(f => ({ ...f, content: val }))}
+              modules={QUILL_MODULES}
+              formats={QUILL_FORMATS}
+              placeholder="Содержимое урока…"
+            />
+          </div>
 
           <label className="cd-label">URL видео</label>
           <input className="cd-input" placeholder="https://…"

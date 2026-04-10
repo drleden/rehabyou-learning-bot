@@ -736,6 +736,136 @@
   margin-top: 4px;
 }
 
+/* ── Quill rich-text editor — dark theme ──────────────────────────────────── */
+
+.cd-quill-wrap {
+  margin-top: 4px;
+}
+
+.cd-quill-wrap .ql-toolbar.ql-snow {
+  background: var(--bg-card-2, #1a1a2e);
+  border: 1px solid var(--border);
+  border-bottom: none;
+  border-radius: var(--r-md) var(--r-md) 0 0;
+  padding: 6px 8px;
+}
+
+.cd-quill-wrap .ql-container.ql-snow {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 0 0 var(--r-md) var(--r-md);
+  font-family: inherit;
+  font-size: 14px;
+  color: var(--text-primary);
+  min-height: 130px;
+}
+
+.cd-quill-wrap .ql-editor {
+  color: var(--text-primary);
+  min-height: 130px;
+  line-height: 1.6;
+  padding: 10px 12px;
+}
+
+.cd-quill-wrap .ql-editor.ql-blank::before {
+  color: var(--text-muted);
+  font-style: italic;
+  left: 12px;
+}
+
+/* toolbar icons */
+.cd-quill-wrap .ql-toolbar .ql-stroke {
+  stroke: var(--text-secondary);
+}
+
+.cd-quill-wrap .ql-toolbar .ql-fill {
+  fill: var(--text-secondary);
+}
+
+.cd-quill-wrap .ql-toolbar .ql-picker-label {
+  color: var(--text-secondary);
+}
+
+.cd-quill-wrap .ql-toolbar .ql-picker-label .ql-stroke {
+  stroke: var(--text-secondary);
+}
+
+.cd-quill-wrap .ql-toolbar button:hover .ql-stroke,
+.cd-quill-wrap .ql-toolbar .ql-active .ql-stroke {
+  stroke: var(--orange) !important;
+}
+
+.cd-quill-wrap .ql-toolbar button:hover .ql-fill,
+.cd-quill-wrap .ql-toolbar .ql-active .ql-fill {
+  fill: var(--orange) !important;
+}
+
+.cd-quill-wrap .ql-toolbar .ql-picker-label:hover,
+.cd-quill-wrap .ql-toolbar .ql-picker-label.ql-active {
+  color: var(--orange);
+}
+
+.cd-quill-wrap .ql-toolbar .ql-picker-label:hover .ql-stroke,
+.cd-quill-wrap .ql-toolbar .ql-picker-label.ql-active .ql-stroke {
+  stroke: var(--orange) !important;
+}
+
+/* picker dropdown */
+.cd-quill-wrap .ql-picker-options {
+  background: var(--bg-card);
+  border-color: var(--border) !important;
+  border-radius: var(--r-md);
+  padding: 4px;
+}
+
+.cd-quill-wrap .ql-picker-item {
+  color: var(--text-secondary);
+  border-radius: var(--r-sm);
+}
+
+.cd-quill-wrap .ql-picker-item:hover {
+  color: var(--orange);
+  background: var(--orange-dim);
+}
+
+/* focus border on container */
+.cd-quill-wrap .ql-container.ql-snow:focus-within {
+  border-color: var(--orange);
+}
+
+/* heading styles inside editor */
+.cd-quill-wrap .ql-editor h2 {
+  font-size: 18px;
+  font-weight: 700;
+  margin: 14px 0 6px;
+  color: var(--text-primary);
+}
+
+.cd-quill-wrap .ql-editor h3 {
+  font-size: 15px;
+  font-weight: 700;
+  margin: 12px 0 4px;
+  color: var(--text-primary);
+}
+
+.cd-quill-wrap .ql-editor blockquote {
+  border-left: 3px solid var(--orange);
+  padding: 6px 12px;
+  color: var(--text-secondary);
+  margin: 8px 0;
+  font-style: italic;
+}
+
+.cd-quill-wrap .ql-editor ol,
+.cd-quill-wrap .ql-editor ul {
+  padding-left: 20px;
+}
+
+.cd-quill-wrap .ql-editor li {
+  color: var(--text-primary);
+  line-height: 1.7;
+}
+
 /* ── Assignment modal internals ─────────────────────────────────────────── */
 
 .cd-assign-existing {

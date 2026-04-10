@@ -128,7 +128,7 @@
   background: #000;
 }
 
-/* ── Lesson content (markdown) ───────────────────────────────────────────── */
+/* ── Lesson content ───────────────────────────────────────────────────────── */
 
 .lv-content {
   padding: 20px 16px 8px;
@@ -143,14 +143,60 @@
   font-style: italic;
 }
 
-/* markdown elements */
-.md-h1 { font-size: 22px; font-weight: 700; margin: 0 0 12px; color: var(--text-primary); line-height: 1.2; }
-.md-h2 { font-size: 18px; font-weight: 700; margin: 20px 0 8px; color: var(--text-primary); }
-.md-h3 { font-size: 15px; font-weight: 700; margin: 16px 0 6px; color: var(--text-primary); }
-.md-p  { font-size: 15px; line-height: 1.7; color: var(--text-primary); margin: 0 0 10px; }
-.md-ul { font-size: 15px; line-height: 1.7; color: var(--text-primary); margin: 0 0 10px; padding-left: 20px; }
-.md-ul li { margin-bottom: 4px; }
-.md-spacer { height: 8px; }
+/* HTML content rendered from Quill editor */
+.lv-html-content {
+  font-size: 15px;
+  line-height: 1.7;
+  color: var(--text-primary);
+}
+
+.lv-html-content h2 {
+  font-size: 20px;
+  font-weight: 700;
+  margin: 20px 0 10px;
+  color: var(--text-primary);
+  line-height: 1.2;
+}
+
+.lv-html-content h3 {
+  font-size: 16px;
+  font-weight: 700;
+  margin: 16px 0 8px;
+  color: var(--text-primary);
+}
+
+.lv-html-content p {
+  margin: 0 0 10px;
+}
+
+.lv-html-content strong {
+  font-weight: 700;
+}
+
+.lv-html-content em {
+  font-style: italic;
+}
+
+.lv-html-content ul,
+.lv-html-content ol {
+  padding-left: 22px;
+  margin: 0 0 10px;
+}
+
+.lv-html-content li {
+  margin-bottom: 4px;
+  line-height: 1.6;
+}
+
+.lv-html-content blockquote {
+  border-left: 3px solid var(--orange);
+  padding: 8px 14px;
+  margin: 10px 0;
+  color: var(--text-secondary);
+  font-style: italic;
+  background: var(--bg-overlay);
+  border-radius: 0 var(--r-sm) var(--r-sm) 0;
+}
 
 /* ── Footer (action buttons) ────────────────────────────────────────────── */
 

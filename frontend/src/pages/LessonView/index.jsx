@@ -14,50 +14,16 @@ const useLesson = (id) =>
     retry: false,
   });
 
-// ── Simple markdown renderer ──────────────────────────────────────────────────
-// Handles: # headings, **bold**, *italic*, line breaks, blank lines as paragraphs
+// ── HTML content renderer ─────────────────────────────────────────────────────
 
-function renderMarkdown(text) {
-  if (!text) return null;
-  const lines = text.split("\n");
-  const elements = [];
-  let key = 0;
-
-  const inlineRender = (line) => {
-    // Bold + italic
-    const parts = line.split(/(\*\*\*.*?\*\*\*|\*\*.*?\*\*|\*.*?\*)/g);
-    return parts.map((part, i) => {
-      if (part.startsWith("***") && part.endsWith("***"))
-        return <strong key={i}><em>{part.slice(3, -3)}</em></strong>;
-      if (part.startsWith("**") && part.endsWith("**"))
-        return <strong key={i}>{part.slice(2, -2)}</strong>;
-      if (part.startsWith("*") && part.endsWith("*"))
-        return <em key={i}>{part.slice(1, -1)}</em>;
-      return part;
-    });
-  };
-
-  let i = 0;
-  while (i < lines.length) {
-    const line = lines[i];
-    if (line.startsWith("# "))      { elements.push(<h1 key={key++} className="md-h1">{inlineRender(line.slice(2))}</h1>); }
-    else if (line.startsWith("## ")) { elements.push(<h2 key={key++} className="md-h2">{inlineRender(line.slice(3))}</h2>); }
-    else if (line.startsWith("### ")){ elements.push(<h3 key={key++} className="md-h3">{inlineRender(line.slice(4))}</h3>); }
-    else if (line.startsWith("- ") || line.startsWith("• ")) {
-      // Collect list items
-      const items = [];
-      while (i < lines.length && (lines[i].startsWith("- ") || lines[i].startsWith("• "))) {
-        items.push(<li key={i}>{inlineRender(lines[i].slice(2))}</li>);
-        i++;
-      }
-      elements.push(<ul key={key++} className="md-ul">{items}</ul>);
-      continue;
-    }
-    else if (line.trim() === "") { elements.push(<div key={key++} className="md-spacer" />); }
-    else { elements.push(<p key={key++} className="md-p">{inlineRender(line)}</p>); }
-    i++;
-  }
-  return elements;
+function HtmlContent({ html }) {
+  if (!html) return null;
+  return (
+    <div
+      className="lv-html-content"
+      dangerouslySetInnerHTML={{ __html: html }}
+    />
+  );
 }
 
 // ── Video player ──────────────────────────────────────────────────────────────
@@ -123,7 +89,7 @@ function ContentStep({ lesson, onNext }) {
 
       <div className="lv-content">
         {lesson.content
-          ? renderMarkdown(lesson.content)
+          ? <HtmlContent html={lesson.content} />
           : <p className="lv-no-content">Текст урока не добавлен.</p>
         }
       </div>

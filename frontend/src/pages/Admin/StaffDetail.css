@@ -318,3 +318,133 @@
   padding: 10px 0 4px;
   white-space: pre-wrap;
 }
+
+/* ── Access block (password management) ──────────────────────────────────── */
+
+.sd-access-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  margin: 0 12px;
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.sd-access-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.sd-access-label {
+  font-size: 13px;
+  color: var(--text-secondary);
+  flex-shrink: 0;
+}
+
+.sd-access-pwd-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.sd-access-val {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+  font-family: "SF Mono", "Fira Code", monospace;
+  letter-spacing: 0.04em;
+}
+
+.sd-access-val--muted {
+  color: var(--text-muted);
+  font-weight: 400;
+  font-family: inherit;
+  font-size: 13px;
+}
+
+.sd-access-eye {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 15px;
+  line-height: 1;
+  padding: 0;
+  color: var(--text-muted);
+  -webkit-tap-highlight-color: transparent;
+}
+
+.sd-access-new-pwd {
+  background: var(--orange-dim);
+  border: 1px solid rgba(255,107,53,0.3);
+  border-radius: var(--r-md);
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.sd-access-new-label {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--orange);
+}
+
+.sd-access-new-val {
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--text-primary);
+  font-family: "SF Mono", "Fira Code", monospace;
+  letter-spacing: 0.1em;
+}
+
+.sd-access-copy {
+  background: var(--orange);
+  border: none;
+  border-radius: var(--r-md);
+  color: #fff;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  padding: 8px 12px;
+  cursor: pointer;
+  align-self: flex-start;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.sd-access-reset-btn {
+  background: transparent;
+  border: 1px dashed var(--border);
+  border-radius: var(--r-md);
+  color: var(--text-secondary);
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  padding: 10px;
+  cursor: pointer;
+  width: 100%;
+  text-align: center;
+  transition: border-color 0.2s, color 0.2s;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.sd-access-reset-btn:active {
+  border-color: var(--orange);
+  color: var(--orange);
+}
+
+.sd-access-reset-btn:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.sd-access-err {
+  font-size: 12px;
+  color: #ff6b6b;
+  margin: 0;
+}

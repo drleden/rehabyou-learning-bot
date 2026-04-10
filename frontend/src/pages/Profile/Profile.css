@@ -250,6 +250,181 @@
   padding: 0 16px 12px;
 }
 
+/* ── Change password button ──────────────────────────────────────────────── */
+
+.pf-change-pwd-btn {
+  display: block;
+  width: calc(100% - 32px);
+  margin: 8px 16px 0;
+  padding: 13px;
+  border: 1.5px solid var(--border);
+  border-radius: var(--r-lg);
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 15px;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: border-color 0.15s, color 0.15s;
+}
+
+.pf-change-pwd-btn:active {
+  border-color: var(--orange);
+  color: var(--orange);
+}
+
+/* ── Change password modal ───────────────────────────────────────────────── */
+
+.pf-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.7);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  z-index: 200;
+  padding: 0 0 env(safe-area-inset-bottom, 0);
+}
+
+.pf-modal {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--r-xl) var(--r-xl) 0 0;
+  width: 100%;
+  max-width: 480px;
+  padding: 0 0 24px;
+  max-height: 90dvh;
+  overflow-y: auto;
+}
+
+.pf-modal-hd {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 20px 14px;
+  border-bottom: 1px solid var(--border);
+  position: sticky;
+  top: 0;
+  background: var(--bg-card);
+}
+
+.pf-modal-title {
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.pf-modal-close {
+  background: var(--bg-overlay);
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  color: var(--text-secondary);
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 13px;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.pf-modal-form {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 16px 20px 0;
+}
+
+.pf-modal-label {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-top: 8px;
+}
+
+.pf-modal-input {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  color: var(--text-primary);
+  font-family: inherit;
+  font-size: 15px;
+  padding: 11px 12px;
+  outline: none;
+  transition: border-color 0.2s;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.pf-modal-input:focus { border-color: var(--orange); }
+
+.pf-modal-pwd-wrap {
+  position: relative;
+}
+
+.pf-modal-input--pwd {
+  padding-right: 44px;
+}
+
+.pf-modal-eye {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 16px;
+  color: var(--text-muted);
+  padding: 0;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.pf-modal-err {
+  font-size: 12px;
+  color: #ff6b6b;
+  margin: 4px 0 0;
+}
+
+.pf-modal-btn {
+  margin-top: 16px;
+  background: var(--grad-brand);
+  border: none;
+  border-radius: var(--r-md);
+  color: #fff;
+  font-family: inherit;
+  font-size: 15px;
+  font-weight: 700;
+  padding: 13px;
+  cursor: pointer;
+  transition: opacity 0.2s;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.pf-modal-btn:disabled { opacity: 0.5; cursor: default; }
+.pf-modal-btn:active:not(:disabled) { opacity: 0.85; }
+
+.pf-modal-done {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 32px 20px 0;
+}
+
+.pf-modal-done-icon { font-size: 44px; }
+
+.pf-modal-done-text {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0;
+}
+
 /* ── Logout button ───────────────────────────────────────────────────────── */
 
 .pf-logout-btn {

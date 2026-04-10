@@ -4,8 +4,9 @@
  * Shows: name, role/status, service permission chips (green/grey),
  * brief learning progress summary.
  */
+import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import { useAuth } from "../../context/AuthContext";
 import api from "../../api";
 import "./Profile.css";
@@ -134,10 +135,102 @@ function ProgressSummary({ progress, isLoading }) {
   );
 }
 
+// ── Change password modal ─────────────────────────────────────────────────────
+
+function ChangePasswordModal({ onClose }) {
+  const [oldPwd, setOldPwd] = useState("");
+  const [newPwd, setNewPwd] = useState("");
+  const [confirm, setConfirm] = useState("");
+  const [showNew, setShowNew] = useState(false);
+  const [err, setErr] = useState(null);
+  const [done, setDone] = useState(false);
+
+  const mut = useMutation({
+    mutationFn: () => api.post("/api/auth/set-password", {
+      old_password: oldPwd || undefined,
+      new_password: newPwd,
+    }),
+    onSuccess: () => setDone(true),
+    onError: (e) => setErr(e?.response?.data?.detail ?? "Ошибка сохранения"),
+  });
+
+  function submit(e) {
+    e.preventDefault();
+    setErr(null);
+    if (newPwd.length < 6) { setErr("Минимум 6 символов"); return; }
+    if (newPwd !== confirm) { setErr("Пароли не совпадают"); return; }
+    mut.mutate();
+  }
+
+  return (
+    <div className="pf-modal-overlay" onClick={onClose}>
+      <div className="pf-modal" onClick={e => e.stopPropagation()}>
+        <div className="pf-modal-hd">
+          <span className="pf-modal-title">Изменить пароль</span>
+          <button className="pf-modal-close" onClick={onClose}>✕</button>
+        </div>
+
+        {done ? (
+          <div className="pf-modal-done">
+            <div className="pf-modal-done-icon">✅</div>
+            <p className="pf-modal-done-text">Пароль успешно изменён</p>
+            <button className="pf-modal-btn" onClick={onClose}>Закрыть</button>
+          </div>
+        ) : (
+          <form className="pf-modal-form" onSubmit={submit} noValidate>
+            <label className="pf-modal-label">Текущий пароль</label>
+            <input
+              className="pf-modal-input"
+              type="password"
+              placeholder="Оставьте пустым, если ещё не задан"
+              value={oldPwd}
+              onChange={e => setOldPwd(e.target.value)}
+              autoComplete="current-password"
+            />
+
+            <label className="pf-modal-label">Новый пароль</label>
+            <div className="pf-modal-pwd-wrap">
+              <input
+                className="pf-modal-input pf-modal-input--pwd"
+                type={showNew ? "text" : "password"}
+                placeholder="Минимум 6 символов"
+                value={newPwd}
+                onChange={e => setNewPwd(e.target.value)}
+                autoComplete="new-password"
+                autoFocus
+              />
+              <button type="button" className="pf-modal-eye" onClick={() => setShowNew(v => !v)}>
+                {showNew ? "🙈" : "👁"}
+              </button>
+            </div>
+
+            <label className="pf-modal-label">Повторите новый пароль</label>
+            <input
+              className="pf-modal-input"
+              type="password"
+              placeholder="Повторите пароль"
+              value={confirm}
+              onChange={e => setConfirm(e.target.value)}
+              autoComplete="new-password"
+            />
+
+            {err && <p className="pf-modal-err">{err}</p>}
+
+            <button className="pf-modal-btn" type="submit" disabled={mut.isPending}>
+              {mut.isPending ? "Сохранение…" : "Сохранить пароль"}
+            </button>
+          </form>
+        )}
+      </div>
+    </div>
+  );
+}
+
 // ── Main page ─────────────────────────────────────────────────────────────────
 
 export default function Profile() {
   const { user } = useAuth();
+  const [changePwdOpen, setChangePwdOpen] = useState(false);
   const { data: permissions, isLoading: permLoading } = usePermissions(user?.id);
   const { data: progress, isLoading: progLoading } = useCourseProgress();
 
@@ -183,7 +276,13 @@ export default function Profile() {
         Перейти к курсам →
       </Link>
 
+      <button className="pf-change-pwd-btn" onClick={() => setChangePwdOpen(true)}>
+        🔑 Изменить пароль
+      </button>
+
       <LogoutButton />
+
+      {changePwdOpen && <ChangePasswordModal onClose={() => setChangePwdOpen(false)} />}
     </div>
   );
 }

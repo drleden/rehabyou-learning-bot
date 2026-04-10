@@ -162,6 +162,63 @@
   line-height: 1.6;
 }
 
+/* Tabs */
+.login-tabs {
+  display: flex;
+  gap: 0;
+  width: 100%;
+  background: #1a1a1a;
+  border-radius: 10px;
+  padding: 3px;
+  margin-bottom: 20px;
+}
+
+.login-tab {
+  flex: 1;
+  background: transparent;
+  border: none;
+  border-radius: 8px;
+  color: #888;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  padding: 9px 8px;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+  -webkit-tap-highlight-color: transparent;
+  white-space: nowrap;
+}
+
+.login-tab--active {
+  background: #242424;
+  color: #f0f0f0;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.4);
+}
+
+/* Password field wrapper */
+.login-pwd-wrap {
+  position: relative;
+}
+
+.login-input--pwd {
+  padding-right: 44px;
+}
+
+.login-pwd-toggle {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 16px;
+  line-height: 1;
+  padding: 0;
+  color: #888;
+  -webkit-tap-highlight-color: transparent;
+}
+
 /* Telegram error block */
 .login-tg-error {
   width: 100%;

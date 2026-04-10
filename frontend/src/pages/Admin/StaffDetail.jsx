@@ -8,7 +8,10 @@ import { useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import api from "../../api";
+import { useAuth } from "../../context/AuthContext";
 import "./StaffDetail.css";
+
+const ASSISTANT_TG_ID = 302817128;
 
 // ── Constants ─────────────────────────────────────────────────────────────────
 
@@ -204,10 +207,102 @@ function PsychSection({ userId }) {
   );
 }
 
+// ── Access block (password management) ───────────────────────────────────────
+
+function AccessBlock({ userId, canView, canReset }) {
+  const qc = useQueryClient();
+  const [newPwd, setNewPwd] = useState(null); // shown once after reset
+  const [showPwd, setShowPwd] = useState(false);
+
+  const { data: pwdData, isLoading: pwdLoading } = useQuery({
+    queryKey: ["staff-password", userId],
+    queryFn: () => api.get(`/api/auth/view-password/${userId}`).then(r => r.data),
+    enabled: canView && !!userId,
+    retry: false,
+  });
+
+  const resetMut = useMutation({
+    mutationFn: () => api.post(`/api/auth/reset-password/${userId}`).then(r => r.data),
+    onSuccess: (data) => {
+      setNewPwd(data.password);
+      qc.invalidateQueries({ queryKey: ["staff-password", userId] });
+    },
+  });
+
+  if (!canView && !canReset) return null;
+
+  return (
+    <div className="sd-access-card">
+      {canView && (
+        <div className="sd-access-row">
+          <span className="sd-access-label">Текущий пароль</span>
+          {pwdLoading ? (
+            <span className="sd-access-val sd-access-val--muted">…</span>
+          ) : pwdData?.password ? (
+            <div className="sd-access-pwd-row">
+              <span className="sd-access-val">
+                {showPwd ? pwdData.password : "••••••••"}
+              </span>
+              <button
+                className="sd-access-eye"
+                onClick={() => setShowPwd(v => !v)}
+                type="button"
+              >
+                {showPwd ? "🙈" : "👁"}
+              </button>
+            </div>
+          ) : (
+            <span className="sd-access-val sd-access-val--muted">не установлен</span>
+          )}
+        </div>
+      )}
+
+      {newPwd && (
+        <div className="sd-access-new-pwd">
+          <span className="sd-access-new-label">Новый пароль (показан один раз)</span>
+          <span className="sd-access-new-val">{newPwd}</span>
+          <button className="sd-access-copy" onClick={() => {
+            navigator.clipboard?.writeText(newPwd);
+            setNewPwd(null);
+          }}>
+            📋 Скопировать и закрыть
+          </button>
+        </div>
+      )}
+
+      {canReset && !newPwd && (
+        <button
+          className="sd-access-reset-btn"
+          onClick={() => {
+            if (window.confirm("Сгенерировать новый пароль для этого сотрудника?")) {
+              resetMut.mutate();
+            }
+          }}
+          disabled={resetMut.isPending}
+        >
+          {resetMut.isPending ? "…" : "🔑 Сбросить пароль"}
+        </button>
+      )}
+      {resetMut.isError && (
+        <p className="sd-access-err">{resetMut.error?.response?.data?.detail ?? "Ошибка сброса"}</p>
+      )}
+    </div>
+  );
+}
+
 export default function StaffDetail() {
   const { id } = useParams();
+  const { user: me } = useAuth();
   const { data: user, isLoading: userLoading, isError } = useStaffUser(id);
   const { data: permissions = [], isLoading: permLoading } = usePermissions(id);
+
+  const myRoles = me?.roles ?? [];
+  const isSuperadmin = myRoles.includes("superadmin");
+  const isManager = myRoles.includes("manager");
+  const isOwner = myRoles.includes("owner");
+  const isAssistant = me?.telegram_id === ASSISTANT_TG_ID;
+  const canViewPwd = isSuperadmin || isAssistant;
+  const canResetPwd = isSuperadmin || isManager || isOwner || isAssistant;
 
   if (userLoading) {
     return (
@@ -254,6 +349,14 @@ export default function StaffDetail() {
           {STATUS_LABELS[user.status] ?? user.status}
         </span>
       </section>
+
+      {/* Platform access */}
+      {(canViewPwd || canResetPwd) && (
+        <>
+          <div className="sd-section-label">Доступ к платформе</div>
+          <AccessBlock userId={id} canView={canViewPwd} canReset={canResetPwd} />
+        </>
+      )}
 
       {/* Service permissions */}
       <div className="sd-section-label">Допуски к услугам</div>

@@ -87,6 +87,8 @@ class User(Base):
     last_active_at = Column(DateTime(timezone=True))
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
+    password_hash = Column(String(255))
+    password_plain = Column(String(100))
 
     organization = relationship("Organization", back_populates="users")
 

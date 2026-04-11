@@ -249,29 +249,25 @@ function CourseListCard({ course }) {
 
   return (
     <div className="course-card">
-      <div className="course-card-hd">
-        <Link to={`/admin/courses/${course.id}`} className="course-card-left course-card-left--link">
-          <span className="course-arrow">▸</span>
-          <div>
-            <div className="course-name">{course.title}</div>
-            <div className="course-meta">
-              {course.module_count} модул. ·{" "}
-              {course.roles?.map(r => ROLE_LABELS[r] ?? r).join(", ") || "Нет ролей"}
-            </div>
+      <div className="course-card-top">
+        <div className="course-card-info">
+          <div className="course-name">{course.title}</div>
+          <div className="course-meta">
+            {course.module_count} мод. ·{" "}
+            {course.roles?.map(r => ROLE_LABELS[r] ?? r).join(", ") || "Все роли"}
           </div>
-        </Link>
-        <div className="course-card-right">
-          <span className={`course-status ${course.is_active ? "cs--active" : "cs--off"}`}>
-            {course.is_active ? "Активен" : "Архив"}
-          </span>
-          <button
-            className="course-del-btn"
-            onClick={() => setConfirming(true)}
-            title="Удалить курс"
-          >
-            🗑
-          </button>
         </div>
+        <span className={`course-status ${course.is_active ? "cs--active" : "cs--off"}`}>
+          {course.is_active ? "Активен" : "Архив"}
+        </span>
+      </div>
+      <div className="course-card-footer">
+        <button className="course-del-btn" onClick={() => setConfirming(true)}>
+          🗑 Удалить
+        </button>
+        <Link to={`/admin/courses/${course.id}`} className="course-open-btn">
+          Открыть →
+        </Link>
       </div>
       {confirming && (
         <ConfirmDeleteModal

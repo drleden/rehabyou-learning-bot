@@ -10,8 +10,8 @@ const useCourse = (id) =>
   useQuery({
     queryKey: ["course", id],
     queryFn: () => api.get(`/api/courses/${id}`).then(r => r.data),
-    enabled: id != null,
-    retry: false,
+    enabled: typeof id === "number" && id > 0 && !isNaN(id),
+    retry: 1,
   });
 
 const useLessonTest = (lessonId) =>

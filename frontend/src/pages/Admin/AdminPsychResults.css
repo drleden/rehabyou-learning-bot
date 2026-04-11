@@ -1,0 +1,240 @@
+/* ── AdminPsychResults page ───────────────────────────────────────────────── */
+
+.apr-page {
+  min-height: 100dvh;
+  background: var(--bg);
+  color: var(--text-primary);
+  font-family: -apple-system, "SF Pro Display", "Segoe UI", sans-serif;
+  display: flex;
+  flex-direction: column;
+  padding-bottom: env(safe-area-inset-bottom, 32px);
+}
+
+.apr-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--border);
+  position: sticky;
+  top: 0;
+  background: var(--bg);
+  z-index: 10;
+}
+
+.apr-back {
+  font-size: 24px;
+  color: var(--text-secondary);
+  text-decoration: none;
+  line-height: 1;
+  padding: 4px 6px;
+  margin-left: -6px;
+  flex-shrink: 0;
+}
+
+.apr-header-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.apr-header-title {
+  font-size: 17px;
+  font-weight: 700;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.apr-header-sub {
+  font-size: 12px;
+  color: var(--text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.apr-copy-all-btn {
+  background: var(--orange-dim);
+  border: 1px solid rgba(196,105,79,0.3);
+  border-radius: var(--r-md);
+  color: var(--orange);
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 6px 12px;
+  cursor: pointer;
+  flex-shrink: 0;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.apr-identity {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 16px;
+  background: var(--bg-card);
+  border-bottom: 1px solid var(--border);
+}
+
+.apr-identity-name {
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.apr-identity-role {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+/* ── Result cards ──────────────────────────────────────────────────────────── */
+
+.apr-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px;
+}
+
+.apr-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--r-xl);
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.apr-card-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.apr-card-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  flex-shrink: 0;
+}
+
+.apr-card-meta {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.apr-card-name {
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.apr-card-date {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.apr-card-badge {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 9px;
+  border-radius: 20px;
+  flex-shrink: 0;
+}
+
+.apr-copy-btn {
+  background: none;
+  border: none;
+  font-size: 18px;
+  cursor: pointer;
+  padding: 4px;
+  flex-shrink: 0;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* ── Belbin score bars ─────────────────────────────────────────────────────── */
+
+.apr-scores {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.apr-score-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.apr-score-role {
+  font-size: 12px;
+  color: var(--text-secondary);
+  width: 120px;
+  flex-shrink: 0;
+}
+
+.apr-score-bar-wrap {
+  flex: 1;
+  height: 6px;
+  background: var(--bg-overlay);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.apr-score-bar {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 0.3s;
+}
+
+.apr-score-val {
+  font-size: 11px;
+  color: var(--text-muted);
+  width: 28px;
+  text-align: right;
+  flex-shrink: 0;
+}
+
+/* ── Interpretation ────────────────────────────────────────────────────────── */
+
+.apr-interp {
+  font-size: 13px;
+  color: var(--text-secondary);
+  line-height: 1.6;
+  white-space: pre-wrap;
+  background: var(--bg-overlay);
+  border-radius: var(--r-md);
+  padding: 12px;
+  border-left: 3px solid var(--orange);
+}
+
+/* ── Empty / skeleton ──────────────────────────────────────────────────────── */
+
+.apr-empty {
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 14px;
+  padding: 40px 16px;
+}
+
+.apr-skeleton {
+  height: 100px;
+  border-radius: var(--r-xl);
+  background: var(--bg-card);
+  animation: apr-shimmer 1.4s infinite linear;
+}
+
+@keyframes apr-shimmer {
+  0%   { opacity: 0.6; }
+  50%  { opacity: 1; }
+  100% { opacity: 0.6; }
+}

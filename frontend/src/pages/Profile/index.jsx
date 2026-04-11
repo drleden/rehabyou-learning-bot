@@ -9,19 +9,12 @@ import { Link, useNavigate } from "react-router-dom";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useAuth } from "../../context/AuthContext";
 import api from "../../api";
+import { ROLE_NAMES } from "../../utils/roles";
 import "./Profile.css";
 
 // ── Role / status labels ──────────────────────────────────────────────────────
 
-const ROLE_LABELS = {
-  superadmin:    "Суперадмин",
-  owner:         "Владелец",
-  admin:         "Администратор",
-  manager:       "Менеджер",
-  senior_master: "Старший мастер",
-  teacher:       "Преподаватель",
-  master:        "Мастер",
-};
+const ROLE_LABELS = ROLE_NAMES;
 
 const STATUS_LABELS = {
   active:  "Активен",

@@ -9,7 +9,6 @@ GET  /results/{user_id}        — results for a specific user (manager/superadm
 GET  /seed                     — seed default tests if table empty (superadmin)
 """
 import json
-import logging
 from typing import Any
 
 from fastapi import APIRouter, Depends, HTTPException
@@ -21,9 +20,6 @@ from database import get_db
 from deps import get_current_user, require_roles
 from models.psych_tests import PsychTest, PsychTestQuestion, PsychTestResult
 from models.users import User
-from services import ai_service
-
-logger = logging.getLogger(__name__)
 
 router = APIRouter()
 
@@ -101,6 +97,68 @@ async def _ensure_seeded(db: AsyncSession) -> None:
                 position=pos,
             ))
     await db.commit()
+
+
+# ── Static interpretation ─────────────────────────────────────────────────────
+
+BELBIN_DESCRIPTIONS = {
+    "Организатор":    "Умеет брать ответственность и организовывать работу команды, распределяя задачи для достижения целей.",
+    "Генератор идей": "Творческий человек — источник новых нестандартных идей, предпочитает работать независимо.",
+    "Финишёр":        "Внимательный к деталям, доводит задачи до конца, обнаруживает ошибки и контролирует качество.",
+    "Исследователь":  "Коммуникабельный и любопытный, находит контакты и ресурсы во внешней среде.",
+    "Аналитик":       "Критически оценивает идеи, находит слабые места в планах, взвешен и беспристрастен.",
+    "Командный игрок":"Поддерживает командный дух и атмосферу сотрудничества, дипломатичен и гибок.",
+    "Исполнитель":    "Практичный и дисциплинированный, реализует идеи в конкретные задачи, надёжен и систематичен.",
+    "Критик":         "Замечает потенциальные проблемы и ошибки, оценивает риски и предупреждает о последствиях.",
+}
+
+MBTI_DESCRIPTIONS = {
+    "INTJ": "Стратег — независимый, аналитический, с развитым интуитивным мышлением и долгосрочным видением.",
+    "INTP": "Логик — теоретик, ищет закономерности, любит решать сложные интеллектуальные задачи.",
+    "ENTJ": "Командир — прирождённый лидер, уверенный, ориентированный на эффективность и стратегические цели.",
+    "ENTP": "Полемист — изобретательный, любит дискуссии, генерирует нестандартные идеи и видит новые возможности.",
+    "INFJ": "Адвокат — глубокие ценности, ориентирован на смысл и помощь другим, с долгосрочными целями.",
+    "INFP": "Посредник — идеалист, стремится к личностному росту и ищет смысл во всём, что делает.",
+    "ENFJ": "Тренер — вдохновляет и мотивирует людей, отличный коммуникатор с природными лидерскими качествами.",
+    "ENFP": "Борец — энергичный и творческий, широкий круг интересов, умеет зажечь других.",
+    "ISTJ": "Администратор — надёжный, методичный, ориентированный на факты, ценит порядок и традиции.",
+    "ISFJ": "Защитник — заботливый, ответственный, тихо поддерживает других, глубоко предан близким.",
+    "ESTJ": "Менеджер — практичный организатор, ценит порядок, правила и структуру в работе.",
+    "ESFJ": "Консул — общительный, заботится о гармонии в коллективе, ориентирован на людей.",
+    "ISTP": "Виртуоз — практичный и наблюдательный, любит разбираться в механизмах и решать технические задачи.",
+    "ISFP": "Артист — чуткий и добросердечный, живёт настоящим моментом, ценит красоту и гармонию.",
+    "ESTP": "Делец — энергичный, предприимчивый, ориентированный на немедленные результаты и действия.",
+    "ESFP": "Шоумен — общительный, спонтанный, любит радовать людей и вносить позитив в жизнь.",
+}
+
+
+def _interpret_score(test_name: str, raw_score: dict) -> str:
+    if test_name == "Белбин":
+        sorted_roles = sorted(raw_score.items(), key=lambda x: x[1], reverse=True)
+        top3 = sorted_roles[:3]
+        lines = ["Ваши топ-3 командные роли:"]
+        for i, (role, _score) in enumerate(top3, 1):
+            desc = BELBIN_DESCRIPTIONS.get(role, "")
+            lines.append(f"{i}. {role} — {desc}")
+        return "\n".join(lines)
+
+    if test_name == "MBTI":
+        mbti_type = raw_score.get("type", "")
+        desc = MBTI_DESCRIPTIONS.get(mbti_type, "Тип личности определён.")
+        return f"Ваш тип личности: {mbti_type}\n\n{desc}"
+
+    if test_name == "Выгорание":
+        pct = raw_score.get("percent", 0)
+        level = raw_score.get("level", "")
+        if pct < 30:
+            detail = "Хороший баланс между работой и отдыхом. Вы справляетесь с нагрузкой и находите ресурсы для восстановления."
+        elif pct < 60:
+            detail = "Рекомендуем обратить внимание на отдых. Постарайтесь снизить уровень стресса и уделять больше времени восстановлению."
+        else:
+            detail = "Необходим отдых и поддержка. Рекомендуем поговорить с руководителем и пересмотреть режим работы."
+        return f"Уровень выгорания: {pct}% ({level})\n\n{detail}"
+
+    return "Тест пройден."
 
 
 # ── Raw score computation ─────────────────────────────────────────────────────
@@ -296,27 +354,15 @@ async def submit_test(
         )
 
     raw_score = _compute_score(test.name, questions, body.answers)
-    role = (actor.roles[0] if actor.roles else "master")
-
-    try:
-        ai_interp = await ai_service.interpret_psych_test(
-            raw_score=raw_score,
-            role=role,
-            test_name=test.name,
-        )
-        ai_model = "claude-sonnet-4-6"
-    except Exception as e:
-        logger.warning("AI interpretation failed: %s", e)
-        ai_interp = "ИИ-интерпретация временно недоступна. Ваши ответы сохранены."
-        ai_model = None
+    interpretation = _interpret_score(test.name, raw_score)
 
     result = PsychTestResult(
         user_id=actor.id,
         test_id=test_id,
         answers=json.dumps(body.answers, ensure_ascii=False),
         raw_score=json.dumps(raw_score, ensure_ascii=False),
-        ai_interpretation=ai_interp,
-        ai_model_used=ai_model,
+        ai_interpretation=interpretation,
+        ai_model_used=None,
     )
     db.add(result)
     await db.commit()
@@ -326,6 +372,6 @@ async def submit_test(
         "id": result.id,
         "test_name": test.name,
         "raw_score": raw_score,
-        "ai_interpretation": ai_interp,
+        "ai_interpretation": interpretation,
         "created_at": result.created_at.isoformat(),
     }

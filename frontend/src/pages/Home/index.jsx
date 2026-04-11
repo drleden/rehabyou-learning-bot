@@ -264,7 +264,6 @@ function ManagerDashboard({ user }) {
     { to: "/admin/courses",   icon: "📚", label: "Курсы",      desc: "Контент и назначение" },
     { to: "/admin/academy",   icon: "🎓", label: "Академия",   desc: "Расписание занятий" },
     { to: "/admin/analytics", icon: "📊", label: "Аналитика",  desc: "Прогресс и статистика" },
-    { to: "/ai-assistant",    icon: "🤖", label: "ИИ-ассист.", desc: "Анализ и рекомендации" },
     { to: "/psych-tests",     icon: "🧠", label: "Психотесты", desc: "Диагностика команды" },
   ];
 
@@ -285,7 +284,7 @@ function ManagerDashboard({ user }) {
       </section>
 
       <div className="role-chip role-chip--manager">
-        {user?.roles?.includes("admin") ? "Администратор" : "Менеджер"}
+        {user?.roles?.includes("admin") ? "Администратор" : "Управляющая"}
       </div>
 
       <div className="section-label">Управление</div>
@@ -327,7 +326,6 @@ function SuperadminDashboard({ user }) {
     { to: "/admin/analytics",    icon: "📊", label: "Аналитика"    },
     { to: "/admin/subscriptions",icon: "💳", label: "Подписки"     },
     { to: "/admin/knowledge",    icon: "📖", label: "База знаний"  },
-    { to: "/ai-assistant",       icon: "🤖", label: "ИИ-ассистент" },
     { to: "/admin/settings",     icon: "🏢", label: "Организации"  },
     { to: "/admin/audit",        icon: "📋", label: "Аудит"        },
     { to: "/psych-tests",        icon: "🧠", label: "Психотесты"   },
@@ -352,7 +350,7 @@ function SuperadminDashboard({ user }) {
       </section>
 
       <div className="role-chip role-chip--super">
-        {user?.roles?.includes("owner") ? "Владелец" : "Суперадмин"}
+        {user?.roles?.includes("owner") ? "Организатор" : "Суперадмин"}
       </div>
 
       <div className="section-label">Управление платформой</div>

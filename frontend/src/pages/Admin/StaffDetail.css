@@ -311,12 +311,89 @@
   flex-shrink: 0;
 }
 
+.sd-psych-detail {
+  padding: 8px 0 4px;
+}
+
 .sd-psych-interp {
   font-size: 12px;
   color: var(--text-secondary);
   line-height: 1.6;
-  padding: 10px 0 4px;
+  padding: 8px 0 4px;
   white-space: pre-wrap;
+}
+
+.sd-psych-scores {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+
+.sd-psych-score-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.sd-psych-score-role {
+  font-size: 11px;
+  color: var(--text-secondary);
+  width: 110px;
+  flex-shrink: 0;
+}
+
+.sd-psych-score-bar-wrap {
+  flex: 1;
+  height: 6px;
+  background: var(--bg-overlay);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.sd-psych-score-bar {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 0.3s;
+}
+
+.sd-psych-score-val {
+  font-size: 11px;
+  color: var(--text-muted);
+  width: 28px;
+  text-align: right;
+  flex-shrink: 0;
+}
+
+.sd-psych-actions {
+  display: flex;
+  gap: 10px;
+  padding: 12px 0 4px;
+  flex-wrap: wrap;
+}
+
+.sd-psych-copy-btn {
+  background: var(--bg-overlay);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  color: var(--text-secondary);
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  padding: 8px 14px;
+  cursor: pointer;
+  transition: background 0.15s;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.sd-psych-copy-btn:active { background: var(--bg-card-2); }
+
+.sd-psych-history-link {
+  font-size: 13px;
+  color: var(--orange);
+  text-decoration: none;
+  padding: 8px 0;
+  font-weight: 600;
 }
 
 /* ── Access block (password management) ──────────────────────────────────── */

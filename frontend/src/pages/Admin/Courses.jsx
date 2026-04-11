@@ -2,15 +2,12 @@ import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import api from "../../api";
+import { ROLE_NAMES } from "../../utils/roles";
 import "./Courses.css";
 
 // ── Constants ─────────────────────────────────────────────────────────────────
 
-const ROLE_LABELS = {
-  superadmin: "Суперадмин", owner: "Владелец",
-  admin: "Администратор", manager: "Менеджер",
-  senior_master: "Старший мастер", teacher: "Преподаватель", master: "Мастер",
-};
+const ROLE_LABELS = ROLE_NAMES;
 const ALL_ROLES = Object.keys(ROLE_LABELS);
 
 // ── API hooks ─────────────────────────────────────────────────────────────────

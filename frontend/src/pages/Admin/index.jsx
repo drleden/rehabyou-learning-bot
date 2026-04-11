@@ -7,6 +7,7 @@ import AcademyAdmin from "./Academy";
 import Analytics from "./Analytics";
 import Subscriptions from "./Subscriptions";
 import AdminKnowledge from "./Knowledge";
+import AdminPsychResults from "./AdminPsychResults";
 import AdminStub from "./Stub";
 
 export default function Admin() {
@@ -17,6 +18,7 @@ export default function Admin() {
       <Route path="staff/:id" element={<StaffDetail />} />
       <Route path="courses" element={<Courses />} />
       <Route path="courses/:id" element={<CourseDetail />} />
+      <Route path="psych-results/:userId" element={<AdminPsychResults />} />
       <Route path="academy/*" element={<AcademyAdmin />} />
       <Route path="analytics" element={<Analytics />} />
       <Route path="subscriptions" element={<Subscriptions />} />

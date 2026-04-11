@@ -11,6 +11,7 @@ import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import api from "../../api";
+import { ROLE_NAMES } from "../../utils/roles";
 import "./Analytics.css";
 
 // ── Data hooks ────────────────────────────────────────────────────────────────
@@ -24,10 +25,7 @@ const useAcademy     = () => useQuery({ queryKey: ["an-academy"],   queryFn: () 
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
-const ROLE_LABELS = {
-  superadmin: "Суперадмин", owner: "Владелец", admin: "Администратор",
-  manager: "Менеджер", senior_master: "Ст. мастер", teacher: "Преп.", master: "Мастер",
-};
+const ROLE_LABELS = ROLE_NAMES;
 
 function fullName(u) {
   return [u.first_name, u.last_name].filter(Boolean).join(" ") || "—";

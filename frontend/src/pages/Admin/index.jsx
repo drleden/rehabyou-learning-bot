@@ -6,6 +6,7 @@ import CourseDetail from "./CourseDetail";
 import AcademyAdmin from "./Academy";
 import Analytics from "./Analytics";
 import Subscriptions from "./Subscriptions";
+import AdminKnowledge from "./Knowledge";
 import AdminStub from "./Stub";
 
 export default function Admin() {
@@ -19,6 +20,7 @@ export default function Admin() {
       <Route path="academy/*" element={<AcademyAdmin />} />
       <Route path="analytics" element={<Analytics />} />
       <Route path="subscriptions" element={<Subscriptions />} />
+      <Route path="knowledge" element={<AdminKnowledge />} />
       <Route path="services/*" element={<AdminStub title="Допуски к услугам" icon="🔑" />} />
       <Route path="settings/*" element={<AdminStub title="Организации и настройки" icon="🏢" />} />
       <Route path="audit/*" element={<AdminStub title="Журнал аудита" icon="📋" />} />

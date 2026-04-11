@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import api from "../../api";
@@ -170,6 +170,10 @@ function ImportCourseModal({ onClose }) {
 // ── Modal: create course ──────────────────────────────────────────────────────
 
 function CreateCourseModal({ onClose }) {
+  useEffect(() => {
+    document.body.style.overflow = 'hidden';
+    return () => { document.body.style.overflow = ''; };
+  }, []);
   const [form, setForm] = useState({ title: "", description: "", roles: [] });
   const [err, setErr] = useState(null);
   const mut = useMut(

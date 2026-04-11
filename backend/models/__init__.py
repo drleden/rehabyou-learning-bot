@@ -59,4 +59,4 @@ from .integrations import (
     AIReport,
     AIDigestSettings,
 )
-from .payments import Payment, PaymentStatus
+from .knowledge import KnowledgeDocument

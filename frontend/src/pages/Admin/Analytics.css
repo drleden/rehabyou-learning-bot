@@ -58,21 +58,24 @@
 .an-overlay {
   position: fixed;
   inset: 0;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
   background: rgba(0,0,0,0.7);
   backdrop-filter: blur(4px);
   z-index: 200;
   display: flex;
-  align-items: flex-end;
+  align-items: flex-start;
   justify-content: center;
+  padding: 20px 16px env(safe-area-inset-bottom, 20px);
 }
 
 .an-digest-modal {
   background: var(--bg-card);
   border: 1px solid var(--border);
-  border-radius: var(--r-xl) var(--r-xl) 0 0;
+  border-radius: 16px;
   width: 100%;
   max-width: 600px;
-  max-height: 85dvh;
+  margin: auto 0;
   display: flex;
   flex-direction: column;
   overflow: hidden;

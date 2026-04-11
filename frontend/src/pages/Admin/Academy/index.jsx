@@ -7,7 +7,7 @@
  * - Кнопка «Отменить» занятие
  * - Ссылка «Журнал новичка» → /admin/academy/novice/:id
  */
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, Routes, Route } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import api from "../../../api";
@@ -50,6 +50,10 @@ function fmtDatetime(iso) {
 // ── Create schedule modal ─────────────────────────────────────────────────────
 
 function CreateClassModal({ onClose }) {
+  useEffect(() => {
+    document.body.style.overflow = 'hidden';
+    return () => { document.body.style.overflow = ''; };
+  }, []);
   const [form, setForm] = useState({
     branch_id: 1,
     topic: "",
@@ -112,6 +116,10 @@ function CreateClassModal({ onClose }) {
 // ── Attendance modal ──────────────────────────────────────────────────────────
 
 function AttendanceModal({ scheduleId, onClose }) {
+  useEffect(() => {
+    document.body.style.overflow = 'hidden';
+    return () => { document.body.style.overflow = ''; };
+  }, []);
   const { data, isLoading } = useAttendanceList(scheduleId);
   const [entries, setEntries] = useState({});
   const [err, setErr] = useState(null);

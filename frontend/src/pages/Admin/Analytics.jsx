@@ -7,7 +7,7 @@
  * - Academy stats (attendance, status distribution)
  * - Inactive users list
  */
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import api from "../../api";
@@ -284,6 +284,10 @@ function InactiveSection({ data, isLoading }) {
 // ── Digest modal ──────────────────────────────────────────────────────────────
 
 function DigestModal({ onClose }) {
+  useEffect(() => {
+    document.body.style.overflow = 'hidden';
+    return () => { document.body.style.overflow = ''; };
+  }, []);
   const [text, setText] = useState(null);
   const [copied, setCopied] = useState(false);
 

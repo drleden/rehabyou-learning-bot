@@ -15,6 +15,7 @@ import Admin from "./pages/Admin";
 import Login from "./pages/Login";
 import PageStub from "./pages/Stub";
 import PsychTestList, { PsychTestTake, PsychTestResults } from "./pages/PsychTests";
+import Knowledge from "./pages/Knowledge";
 
 // ── Splash screen shown while auth is resolving ───────────────────────────────
 
@@ -101,6 +102,7 @@ function AppInner() {
       <Route path="/psych-tests"         element={<PsychTestList />} />
       <Route path="/psych-tests/results" element={<PsychTestResults />} />
       <Route path="/psych-tests/:id"     element={<PsychTestTake />} />
+      <Route path="/knowledge"      element={<Knowledge />} />
       <Route path="/questions"      element={<PageStub title="Вопросы" icon="💬" />} />
       <Route path="/rating"         element={<PageStub title="Рейтинг" icon="🏆" />} />
       <Route path="/admin/*"        element={<Admin />} />

@@ -19,6 +19,7 @@ from routers import (
     auth,
     courses,
     integrations,
+    knowledge,
     learning,
     psych_tests,
     services,
@@ -143,6 +144,7 @@ app.include_router(ai.router,           prefix=f"{API}/ai",            tags=["ai
 app.include_router(subscriptions.router,prefix=f"{API}/subscriptions", tags=["subscriptions"])
 app.include_router(analytics.router,    prefix=f"{API}/analytics",     tags=["analytics"])
 app.include_router(integrations.router, prefix=f"{API}/integrations",  tags=["integrations"])
+app.include_router(knowledge.router,    prefix=f"{API}/knowledge",     tags=["knowledge"])
 app.include_router(admin.router,        prefix=f"{API}/admin",         tags=["admin"])
 
 

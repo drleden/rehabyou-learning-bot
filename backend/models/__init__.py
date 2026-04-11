@@ -58,3 +58,4 @@ from .integrations import (
     AIReport,
     AIDigestSettings,
 )
+from .knowledge import KnowledgeDocument

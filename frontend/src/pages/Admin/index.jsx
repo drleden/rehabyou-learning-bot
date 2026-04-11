@@ -5,6 +5,8 @@ import Courses from "./Courses";
 import CourseDetail from "./CourseDetail";
 import AcademyAdmin from "./Academy";
 import Analytics from "./Analytics";
+import Subscriptions from "./Subscriptions";
+import AdminKnowledge from "./Knowledge";
 import AdminStub from "./Stub";
 
 function Dashboard() { return <AdminStub title="Панель управления" icon="🏠" />; }
@@ -19,8 +21,9 @@ export default function Admin() {
       <Route path="courses/:id" element={<CourseDetail />} />
       <Route path="academy/*" element={<AcademyAdmin />} />
       <Route path="analytics" element={<Analytics />} />
+      <Route path="subscriptions" element={<Subscriptions />} />
+      <Route path="knowledge" element={<AdminKnowledge />} />
       <Route path="services/*" element={<AdminStub title="Допуски к услугам" icon="🔑" />} />
-      <Route path="subscriptions/*" element={<AdminStub title="Подписки и промокоды" icon="💳" />} />
       <Route path="settings/*" element={<AdminStub title="Организации и настройки" icon="🏢" />} />
       <Route path="audit/*" element={<AdminStub title="Журнал аудита" icon="📋" />} />
       <Route path="announcements/*" element={<AdminStub title="Рассылки" icon="📢" />} />

@@ -384,9 +384,9 @@ export default function LessonView() {
     : ["content"];
 
   const advanceTo = (next) => {
-    if (next) setStep(next);
-    else if (lesson?.has_assignment && step === "test") setStep("assignment");
-    else if (lesson?.has_test && step === "content") setStep("test");
+    if (next) { setStep(next); window.scrollTo(0, 0); }
+    else if (lesson?.has_assignment && step === "test") { setStep("assignment"); window.scrollTo(0, 0); }
+    else if (lesson?.has_test && step === "content") { setStep("test"); window.scrollTo(0, 0); }
   };
 
   if (isLoading) {

@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useRef, useEffect } from "react";
 import { Link, useParams, useNavigate } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import api from "../../api";
@@ -371,11 +371,13 @@ export default function LessonView() {
 
   // Reset step when lesson changes
   const lessonId = lesson?.id;
-  const prevIdRef = useState(lessonId);
-  if (prevIdRef[0] !== lessonId) {
-    prevIdRef[0] = lessonId;
-    if (step !== "content") setStep("content");
-  }
+  const prevIdRef = useRef(lessonId);
+  useEffect(() => {
+    if (prevIdRef.current !== lessonId) {
+      prevIdRef.current = lessonId;
+      setStep("content");
+    }
+  }, [lessonId]);
 
   const steps = lesson
     ? ["content", ...(lesson.has_test ? ["test"] : []), ...(lesson.has_assignment ? ["assignment"] : [])]

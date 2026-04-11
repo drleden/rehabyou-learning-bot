@@ -19,6 +19,10 @@ class KnowledgeDocument(Base):
     description = Column(Text)
     category = Column(String(50), nullable=False, default="useful")
     content = Column(Text, nullable=False, default="")
+    # File attachment (Yandex Object Storage)
+    file_url = Column(String(1000))   # S3 object key, e.g. knowledge/<uuid>.pdf
+    file_type = Column(String(10))    # pdf / docx / png / jpg
+    file_size = Column(Integer)       # bytes
     created_by = Column(Integer, ForeignKey("users.id"))
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())

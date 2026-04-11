@@ -147,6 +147,23 @@
   flex-shrink: 0;
 }
 
+/* ── Card meta (size + date) ─────────────────────────────────────────────── */
+
+.kn-card-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 3px;
+}
+
+.kn-file-size {
+  font-size: 11px;
+  color: #666;
+  background: rgba(255,255,255,0.05);
+  padding: 1px 6px;
+  border-radius: 4px;
+}
+
 /* ── States ──────────────────────────────────────────────────────────────── */
 
 .kn-loading, .kn-empty {
@@ -296,3 +313,41 @@
 
 .kn-reader-content strong { color: #f0f0f0; }
 .kn-reader-content em { color: #bbb; }
+
+/* ── Image viewer modal ──────────────────────────────────────────────────── */
+
+.kn-img-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.92);
+  z-index: 400;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  box-sizing: border-box;
+}
+
+.kn-img-modal {
+  max-width: 100%;
+  max-height: 90dvh;
+  border-radius: 10px;
+  object-fit: contain;
+}
+
+.kn-img-close {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  background: rgba(255,255,255,0.12);
+  border: none;
+  border-radius: 50%;
+  width: 36px;
+  height: 36px;
+  font-size: 16px;
+  color: #fff;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}

@@ -1,8 +1,6 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import ReactQuill from "react-quill";
-import "react-quill/dist/quill.snow.css";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import api from "../../api";
 import "./Knowledge.css";
 
@@ -14,20 +12,28 @@ const CATEGORIES = {
   useful:       { label: "Полезное",    icon: "💡" },
 };
 
-const QUILL_MODULES = {
-  toolbar: [
-    [{ header: [2, 3, false] }],
-    ["bold", "italic", "underline"],
-    [{ list: "ordered" }, { list: "bullet" }],
-    ["blockquote", "link"],
-    ["clean"],
-  ],
-};
+// ── Helpers ───────────────────────────────────────────────────────────────────
 
-const QUILL_FORMATS = [
-  "header", "bold", "italic", "underline",
-  "list", "bullet", "blockquote", "link",
-];
+function formatDate(iso) {
+  if (!iso) return "";
+  return new Intl.DateTimeFormat("ru-RU", {
+    day: "numeric", month: "long", year: "numeric",
+  }).format(new Date(iso));
+}
+
+function fmtSize(bytes) {
+  if (!bytes) return "";
+  if (bytes < 1024) return `${bytes} Б`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} КБ`;
+  return `${(bytes / (1024 * 1024)).toFixed(1)} МБ`;
+}
+
+function fileIcon(type) {
+  if (type === "pdf")  return "📄";
+  if (type === "docx") return "📝";
+  if (type === "png" || type === "jpg") return "🖼️";
+  return "📎";
+}
 
 // ── Hooks ─────────────────────────────────────────────────────────────────────
 
@@ -39,29 +45,12 @@ const useDocuments = () =>
     retry: false,
   });
 
-function useMut(fn, keys) {
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: fn,
-    onSuccess: () => keys.forEach(k => qc.invalidateQueries({ queryKey: k })),
-  });
-}
-
-// ── Helpers ───────────────────────────────────────────────────────────────────
-
-function formatDate(iso) {
-  if (!iso) return "";
-  return new Intl.DateTimeFormat("ru-RU", {
-    day: "numeric", month: "long", year: "numeric",
-  }).format(new Date(iso));
-}
-
 // ── Confirm delete modal ──────────────────────────────────────────────────────
 
 function ConfirmModal({ title, message, loading, onConfirm, onClose }) {
   useEffect(() => {
-    document.body.style.overflow = 'hidden';
-    return () => { document.body.style.overflow = ''; };
+    document.body.style.overflow = "hidden";
+    return () => { document.body.style.overflow = ""; };
   }, []);
   return (
     <div className="ak-overlay" onClick={onClose}>
@@ -84,47 +73,86 @@ function ConfirmModal({ title, message, loading, onConfirm, onClose }) {
   );
 }
 
+// ── Image modal ───────────────────────────────────────────────────────────────
+
+function ImgModal({ src, alt, onClose }) {
+  useEffect(() => {
+    document.body.style.overflow = "hidden";
+    return () => { document.body.style.overflow = ""; };
+  }, []);
+  return (
+    <div className="ak-img-overlay" onClick={onClose}>
+      <img className="ak-img-modal" src={src} alt={alt} onClick={e => e.stopPropagation()} />
+      <button className="ak-img-close" onClick={onClose}>✕</button>
+    </div>
+  );
+}
+
 // ── Document form modal (create / edit) ───────────────────────────────────────
 
-const EMPTY_FORM = { title: "", description: "", category: "useful", content: "" };
+const EMPTY_FORM = { title: "", description: "", category: "useful" };
 
 function DocFormModal({ doc, onClose }) {
   useEffect(() => {
-    document.body.style.overflow = 'hidden';
-    return () => { document.body.style.overflow = ''; };
+    document.body.style.overflow = "hidden";
+    return () => { document.body.style.overflow = ""; };
   }, []);
+
   const [form, setForm] = useState(
     doc
-      ? { title: doc.title, description: doc.description ?? "", category: doc.category, content: doc.content }
+      ? { title: doc.title, description: doc.description ?? "", category: doc.category }
       : EMPTY_FORM
   );
+  const [file, setFile] = useState(null);
+  const [progress, setProgress] = useState(0);
+  const [uploading, setUploading] = useState(false);
   const [err, setErr] = useState(null);
+  const fileRef = useRef(null);
+  const qc = useQueryClient();
 
-  const createMut = useMut(
-    body => api.post("/api/knowledge/", body).then(r => r.data),
-    [["admin-knowledge"], ["knowledge"]],
-  );
-  const updateMut = useMut(
-    ({ id, body }) => api.put(`/api/knowledge/${id}`, body).then(r => r.data),
-    [["admin-knowledge"], ["knowledge"]],
-  );
-
-  const loading = createMut.isPending || updateMut.isPending;
+  function onFileChange(e) {
+    const f = e.target.files?.[0];
+    if (f) setFile(f);
+  }
 
   async function submit(e) {
     e.preventDefault();
-    setErr(null);
     if (!form.title.trim()) { setErr("Введите название"); return; }
-    if (!form.content.trim() || form.content === "<p><br></p>") { setErr("Введите содержимое"); return; }
+    if (!doc && !file) { setErr("Выберите файл"); return; }
+
+    const fd = new FormData();
+    fd.append("title", form.title.trim());
+    if (form.description.trim()) fd.append("description", form.description.trim());
+    fd.append("category", form.category);
+    if (file) fd.append("file", file);
+
+    setErr(null);
+    setUploading(true);
+    setProgress(0);
+
     try {
       if (doc) {
-        await updateMut.mutateAsync({ id: doc.id, body: form });
+        await api.put(`/api/knowledge/${doc.id}`, fd, {
+          timeout: 120_000,
+          onUploadProgress: ev => {
+            if (ev.total) setProgress(Math.round((ev.loaded / ev.total) * 100));
+          },
+        });
       } else {
-        await createMut.mutateAsync(form);
+        await api.post("/api/knowledge/", fd, {
+          timeout: 120_000,
+          onUploadProgress: ev => {
+            if (ev.total) setProgress(Math.round((ev.loaded / ev.total) * 100));
+          },
+        });
       }
+      qc.invalidateQueries({ queryKey: ["admin-knowledge"] });
+      qc.invalidateQueries({ queryKey: ["knowledge"] });
       onClose();
-    } catch (e) {
-      setErr(e?.response?.data?.detail ?? "Ошибка сохранения");
+    } catch (ex) {
+      setErr(ex?.response?.data?.detail ?? "Ошибка сохранения");
+    } finally {
+      setUploading(false);
     }
   }
 
@@ -135,6 +163,7 @@ function DocFormModal({ doc, onClose }) {
           <span className="ak-modal-title">{doc ? "Редактировать документ" : "Новый документ"}</span>
           <button className="ak-close" onClick={onClose}>✕</button>
         </div>
+
         <form className="ak-form" onSubmit={submit}>
           <label className="ak-label">Название</label>
           <input
@@ -167,30 +196,138 @@ function DocFormModal({ doc, onClose }) {
             ))}
           </div>
 
-          <label className="ak-label">Содержимое</label>
-          <div className="ak-quill-wrap">
-            <ReactQuill
-              theme="snow"
-              value={form.content}
-              onChange={val => setForm(f => ({ ...f, content: val }))}
-              modules={QUILL_MODULES}
-              formats={QUILL_FORMATS}
-              placeholder="Текст документа…"
-            />
+          <label className="ak-label">
+            {doc ? "Файл (оставьте пустым, чтобы не менять)" : "Файл"}
+          </label>
+
+          <input
+            ref={fileRef}
+            type="file"
+            accept=".pdf,.docx,.png,.jpg,.jpeg"
+            style={{ display: "none" }}
+            onChange={onFileChange}
+          />
+
+          <div
+            className={`ak-file-drop ${file ? "ak-file-drop--has" : ""}`}
+            onClick={() => fileRef.current?.click()}
+          >
+            {file ? (
+              <>
+                <span className="ak-file-drop-icon">{fileIcon(file.name.split(".").pop())}</span>
+                <div className="ak-file-drop-info">
+                  <span className="ak-file-drop-name">{file.name}</span>
+                  <span className="ak-file-drop-size">{fmtSize(file.size)}</span>
+                </div>
+              </>
+            ) : doc?.file_url ? (
+              <>
+                <span className="ak-file-drop-icon">{fileIcon(doc.file_type)}</span>
+                <div className="ak-file-drop-info">
+                  <span className="ak-file-drop-name">Текущий файл: {doc.file_type?.toUpperCase()}</span>
+                  {doc.file_size && <span className="ak-file-drop-size">{fmtSize(doc.file_size)}</span>}
+                </div>
+                <span className="ak-file-drop-hint">Нажмите для замены</span>
+              </>
+            ) : (
+              <>
+                <span className="ak-file-drop-icon">📥</span>
+                <span className="ak-file-drop-text">Нажмите для выбора файла</span>
+                <span className="ak-file-drop-sub">PDF, DOCX, PNG, JPG · до 20 МБ</span>
+              </>
+            )}
           </div>
+
+          {uploading && (
+            <div className="ak-progress-wrap">
+              <div className="ak-progress-bar" style={{ width: `${progress}%` }} />
+              <span className="ak-progress-pct">{progress}%</span>
+            </div>
+          )}
 
           {err && <p className="ak-err">{err}</p>}
 
           <div className="ak-form-actions">
-            <button className="ak-btn ak-btn--primary" type="submit" disabled={loading}>
-              {loading ? "Сохранение…" : doc ? "Сохранить" : "Создать"}
+            <button className="ak-btn ak-btn--primary" type="submit" disabled={uploading}>
+              {uploading ? "Загрузка…" : doc ? "Сохранить" : "Создать"}
             </button>
-            <button className="ak-btn ak-btn--ghost" type="button" onClick={onClose} disabled={loading}>
+            <button className="ak-btn ak-btn--ghost" type="button" onClick={onClose} disabled={uploading}>
               Отмена
             </button>
           </div>
         </form>
       </div>
+    </div>
+  );
+}
+
+// ── Document card ─────────────────────────────────────────────────────────────
+
+function DocCard({ doc, onEdit, onDelete }) {
+  const [viewLoading, setViewLoading] = useState(false);
+  const [imgModal, setImgModal] = useState(null);
+
+  async function handleView() {
+    setViewLoading(true);
+    try {
+      const { data } = await api.get(`/api/knowledge/${doc.id}`);
+      if (!data.view_url) return;
+      if (data.file_type === "pdf") {
+        window.open(data.view_url, "_blank", "noopener");
+      } else if (data.file_type === "docx") {
+        window.open(
+          `https://docs.google.com/viewer?url=${encodeURIComponent(data.view_url)}&embedded=true`,
+          "_blank",
+          "noopener",
+        );
+      } else {
+        setImgModal(data.view_url);
+      }
+    } catch { /* ignore */ }
+    finally { setViewLoading(false); }
+  }
+
+  return (
+    <div className="ak-card">
+      <div className="ak-card-file-icon">{fileIcon(doc.file_type)}</div>
+      <div className="ak-card-body">
+        <div className="ak-card-title">{doc.title}</div>
+        {doc.description && <div className="ak-card-desc">{doc.description}</div>}
+        <div className="ak-card-meta">
+          {doc.file_size ? <span className="ak-card-size">{fmtSize(doc.file_size)}</span> : null}
+          <span className="ak-card-date">{formatDate(doc.created_at)}</span>
+        </div>
+      </div>
+      <div className="ak-card-actions">
+        {doc.file_url && (
+          <button
+            className="ak-action-btn ak-action-btn--view"
+            onClick={handleView}
+            disabled={viewLoading}
+            title="Читать"
+          >
+            {viewLoading ? "⏳" : "👁️"}
+          </button>
+        )}
+        <button
+          className="ak-action-btn ak-action-btn--edit"
+          onClick={() => onEdit(doc)}
+          title="Редактировать"
+        >
+          ✏️
+        </button>
+        <button
+          className="ak-action-btn ak-action-btn--del"
+          onClick={() => onDelete(doc)}
+          title="Удалить"
+        >
+          🗑
+        </button>
+      </div>
+
+      {imgModal && (
+        <ImgModal src={imgModal} alt={doc.title} onClose={() => setImgModal(null)} />
+      )}
     </div>
   );
 }
@@ -202,19 +339,15 @@ export default function AdminKnowledge() {
   const [search, setSearch] = useState("");
   const [formDoc, setFormDoc] = useState(undefined); // undefined=closed, null=new, doc=edit
   const [deleteTarget, setDeleteTarget] = useState(null);
-
-  const deleteMut = useMut(
-    id => api.delete(`/api/knowledge/${id}`),
-    [["admin-knowledge"], ["knowledge"]],
-  );
+  const qc = useQueryClient();
 
   async function confirmDelete() {
     try {
-      await deleteMut.mutateAsync(deleteTarget.id);
+      await api.delete(`/api/knowledge/${deleteTarget.id}`);
+      qc.invalidateQueries({ queryKey: ["admin-knowledge"] });
+      qc.invalidateQueries({ queryKey: ["knowledge"] });
       setDeleteTarget(null);
-    } catch {
-      // swallow — list will be stale at worst
-    }
+    } catch { /* swallow */ }
   }
 
   const q = search.toLowerCase();
@@ -253,27 +386,12 @@ export default function AdminKnowledge() {
               <div className="ak-section-label">{icon} {label}</div>
               <div className="ak-cards">
                 {catDocs.map(doc => (
-                  <div key={doc.id} className="ak-card">
-                    <div className="ak-card-body">
-                      <div className="ak-card-title">{doc.title}</div>
-                      {doc.description && (
-                        <div className="ak-card-desc">{doc.description}</div>
-                      )}
-                      <div className="ak-card-date">{formatDate(doc.created_at)}</div>
-                    </div>
-                    <div className="ak-card-actions">
-                      <button
-                        className="ak-action-btn ak-action-btn--edit"
-                        onClick={() => setFormDoc(doc)}
-                        title="Редактировать"
-                      >✏️</button>
-                      <button
-                        className="ak-action-btn ak-action-btn--del"
-                        onClick={() => setDeleteTarget(doc)}
-                        title="Удалить"
-                      >🗑</button>
-                    </div>
-                  </div>
+                  <DocCard
+                    key={doc.id}
+                    doc={doc}
+                    onEdit={setFormDoc}
+                    onDelete={setDeleteTarget}
+                  />
                 ))}
               </div>
             </section>
@@ -282,17 +400,14 @@ export default function AdminKnowledge() {
       )}
 
       {formDoc !== undefined && (
-        <DocFormModal
-          doc={formDoc}
-          onClose={() => setFormDoc(undefined)}
-        />
+        <DocFormModal doc={formDoc} onClose={() => setFormDoc(undefined)} />
       )}
 
       {deleteTarget && (
         <ConfirmModal
           title="Удалить документ?"
           message={`«${deleteTarget.title}» будет удалён без возможности восстановления.`}
-          loading={deleteMut.isPending}
+          loading={false}
           onConfirm={confirmDelete}
           onClose={() => setDeleteTarget(null)}
         />

@@ -26,6 +26,8 @@ const useDocument = (id) =>
     retry: false,
   });
 
+// ── Helpers ───────────────────────────────────────────────────────────────────
+
 function formatDate(iso) {
   if (!iso) return "";
   return new Intl.DateTimeFormat("ru-RU", {
@@ -33,7 +35,32 @@ function formatDate(iso) {
   }).format(new Date(iso));
 }
 
-// ── Document reader ───────────────────────────────────────────────────────────
+function fmtSize(bytes) {
+  if (!bytes) return "";
+  if (bytes < 1024) return `${bytes} Б`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} КБ`;
+  return `${(bytes / (1024 * 1024)).toFixed(1)} МБ`;
+}
+
+function fileIcon(type) {
+  if (type === "pdf")  return "📄";
+  if (type === "docx") return "📝";
+  if (type === "png" || type === "jpg") return "🖼️";
+  return "📄";
+}
+
+// ── Image viewer modal ────────────────────────────────────────────────────────
+
+function ImgModal({ src, alt, onClose }) {
+  return (
+    <div className="kn-img-overlay" onClick={onClose}>
+      <img className="kn-img-modal" src={src} alt={alt} onClick={e => e.stopPropagation()} />
+      <button className="kn-img-close" onClick={onClose}>✕</button>
+    </div>
+  );
+}
+
+// ── Document reader (for legacy text-content docs) ────────────────────────────
 
 function DocReader({ docId, onBack }) {
   const { data: doc, isLoading } = useDocument(docId);
@@ -62,6 +89,68 @@ function DocReader({ docId, onBack }) {
         <div className="kn-empty">Документ не найден</div>
       )}
     </div>
+  );
+}
+
+// ── Document card ─────────────────────────────────────────────────────────────
+
+function KnCard({ doc, onOpenReader }) {
+  const [loading, setLoading] = useState(false);
+  const [imgModal, setImgModal] = useState(null);
+
+  async function handleView() {
+    setLoading(true);
+    try {
+      const { data } = await api.get(`/api/knowledge/${doc.id}`);
+      if (!data.view_url) return;
+      if (data.file_type === "pdf") {
+        window.open(data.view_url, "_blank", "noopener");
+      } else if (data.file_type === "docx") {
+        window.open(
+          `https://docs.google.com/viewer?url=${encodeURIComponent(data.view_url)}&embedded=true`,
+          "_blank",
+          "noopener",
+        );
+      } else {
+        setImgModal(data.view_url);
+      }
+    } catch { /* ignore */ }
+    finally { setLoading(false); }
+  }
+
+  function handleClick() {
+    if (doc.file_url) {
+      handleView();
+    } else {
+      onOpenReader(doc.id);
+    }
+  }
+
+  return (
+    <>
+      <button className="kn-card" onClick={handleClick}>
+        <span className="kn-card-icon">{fileIcon(doc.file_type)}</span>
+        <div className="kn-card-body">
+          <div className="kn-card-title">{doc.title}</div>
+          {doc.description && (
+            <div className="kn-card-desc">{doc.description}</div>
+          )}
+          <div className="kn-card-meta">
+            {doc.file_size ? (
+              <span className="kn-file-size">{fmtSize(doc.file_size)}</span>
+            ) : null}
+            <span className="kn-card-date">{formatDate(doc.created_at)}</span>
+          </div>
+        </div>
+        <span className="kn-card-arrow">
+          {loading ? "⏳" : doc.file_url ? "👁️" : "›"}
+        </span>
+      </button>
+
+      {imgModal && (
+        <ImgModal src={imgModal} alt={doc.title} onClose={() => setImgModal(null)} />
+      )}
+    </>
   );
 }
 
@@ -111,21 +200,7 @@ export default function Knowledge() {
               <div className="kn-section-label">{icon} {label}</div>
               <div className="kn-cards">
                 {catDocs.map(doc => (
-                  <button
-                    key={doc.id}
-                    className="kn-card"
-                    onClick={() => setOpenDocId(doc.id)}
-                  >
-                    <span className="kn-card-icon">📄</span>
-                    <div className="kn-card-body">
-                      <div className="kn-card-title">{doc.title}</div>
-                      {doc.description && (
-                        <div className="kn-card-desc">{doc.description}</div>
-                      )}
-                      <div className="kn-card-date">{formatDate(doc.created_at)}</div>
-                    </div>
-                    <span className="kn-card-arrow">›</span>
-                  </button>
+                  <KnCard key={doc.id} doc={doc} onOpenReader={setOpenDocId} />
                 ))}
               </div>
             </section>

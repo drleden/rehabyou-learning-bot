@@ -5,7 +5,7 @@
  * - Ближайшие/прошедшие занятия с кнопками «Записаться» / «Уведомить о неявке»
  * - Кнопка «Запросить аттестацию»
  */
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import api from "../../api";
@@ -64,6 +64,10 @@ function fmtDatetime(iso) {
 // ── Absence notice modal ──────────────────────────────────────────────────────
 
 function AbsenceModal({ scheduleId, onClose }) {
+  useEffect(() => {
+    document.body.style.overflow = 'hidden';
+    return () => { document.body.style.overflow = ''; };
+  }, []);
   const [reason, setReason] = useState("");
   const mut = useMut(
     () => api.post(`/api/academy/schedule/${scheduleId}/absence`, { reason }).then(r => r.data),

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useParams } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import api from "../../api";
@@ -35,6 +35,10 @@ function Spinner() {
 // ── Modal: create module ──────────────────────────────────────────────────────
 
 function CreateModuleModal({ courseId, onClose }) {
+  useEffect(() => {
+    document.body.style.overflow = 'hidden';
+    return () => { document.body.style.overflow = ''; };
+  }, []);
   const [title, setTitle] = useState("");
   const [err, setErr] = useState(null);
   const mut = useMut(
@@ -73,6 +77,10 @@ function CreateModuleModal({ courseId, onClose }) {
 // ── Modal: create / edit lesson ───────────────────────────────────────────────
 
 function LessonModal({ moduleId, lesson, courseId, onClose }) {
+  useEffect(() => {
+    document.body.style.overflow = 'hidden';
+    return () => { document.body.style.overflow = ''; };
+  }, []);
   const editing = !!lesson;
   const [form, setForm] = useState({
     title:     lesson?.title     ?? "",

@@ -345,12 +345,14 @@
 .c-overlay {
   position: fixed;
   inset: 0;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
   background: rgba(0,0,0,0.75);
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: center;
   z-index: 100;
-  padding: 24px 16px;
+  padding: 20px 16px env(safe-area-inset-bottom, 20px);
   animation: c-fadein 0.15s ease;
 }
 
@@ -360,8 +362,8 @@
   width: 100%;
   max-width: 480px;
   background: #181818;
-  border-radius: 20px;
-  max-height: 88dvh;
+  border-radius: 16px;
+  margin: auto 0;
   overflow-y: auto;
   animation: c-slideup 0.2s cubic-bezier(0.4,0,0.2,1);
 }
@@ -420,7 +422,8 @@
   background: #242424;
   border: 1px solid rgba(255,255,255,0.08);
   border-radius: 12px;
-  padding: 13px 16px;
+  padding: 12px 16px;
+  min-height: 48px;
   font-size: 14px;
   color: #fff;
   outline: none;

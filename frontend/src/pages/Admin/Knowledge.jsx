@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import ReactQuill from "react-quill";
@@ -59,6 +59,10 @@ function formatDate(iso) {
 // ── Confirm delete modal ──────────────────────────────────────────────────────
 
 function ConfirmModal({ title, message, loading, onConfirm, onClose }) {
+  useEffect(() => {
+    document.body.style.overflow = 'hidden';
+    return () => { document.body.style.overflow = ''; };
+  }, []);
   return (
     <div className="ak-overlay" onClick={onClose}>
       <div className="ak-modal" onClick={e => e.stopPropagation()}>
@@ -85,6 +89,10 @@ function ConfirmModal({ title, message, loading, onConfirm, onClose }) {
 const EMPTY_FORM = { title: "", description: "", category: "useful", content: "" };
 
 function DocFormModal({ doc, onClose }) {
+  useEffect(() => {
+    document.body.style.overflow = 'hidden';
+    return () => { document.body.style.overflow = ''; };
+  }, []);
   const [form, setForm] = useState(
     doc
       ? { title: doc.title, description: doc.description ?? "", category: doc.category, content: doc.content }

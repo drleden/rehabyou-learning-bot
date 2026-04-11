@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import api from "../../api";
@@ -68,6 +68,10 @@ function useStaff(filters) {
 // ── Invite modal ──────────────────────────────────────────────────────────────
 
 function InviteModal({ onClose }) {
+  useEffect(() => {
+    document.body.style.overflow = 'hidden';
+    return () => { document.body.style.overflow = ''; };
+  }, []);
   const qc = useQueryClient();
   const [form, setForm] = useState({
     telegram_id: "", phone: "", first_name: "", last_name: "", roles: [],

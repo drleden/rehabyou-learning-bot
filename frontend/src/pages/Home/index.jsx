@@ -297,6 +297,8 @@ function ManagerDashboard({ user }) {
 
 /** Superadmin / owner — full control */
 function SuperadminDashboard({ user }) {
+  const { data: progress, isLoading: pLoading } = useCourseProgress();
+
   const adminLinks = [
     { to: "/admin/staff",        icon: "👥", label: "Сотрудники"   },
     { to: "/admin/courses",      icon: "📚", label: "Курсы"        },
@@ -338,6 +340,22 @@ function SuperadminDashboard({ user }) {
           </Link>
         ))}
       </div>
+
+      <div className="section-label" style={{ marginTop: 24 }}>Моё обучение</div>
+      <div className="cards">
+        <CourseCard progress={progress} isLoading={pLoading} />
+      </div>
+
+      <nav className="quick-nav" style={{ marginTop: 8 }}>
+        <Link to="/courses" className="quick-nav-item">
+          <span className="quick-nav-icon">📚</span>
+          <span className="quick-nav-label">Мои курсы</span>
+        </Link>
+        <Link to="/psych-tests" className="quick-nav-item">
+          <span className="quick-nav-icon">🧠</span>
+          <span className="quick-nav-label">Психотесты</span>
+        </Link>
+      </nav>
     </div>
   );
 }

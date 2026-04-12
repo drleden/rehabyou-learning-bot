@@ -252,7 +252,21 @@ function MasterDashboard({ user }) {
         <AcademyCard nextClass={nextClass} stats={stats} isLoading={aLoading} />
       </div>
 
-      <QuickNav />
+      <div className="section-label">Быстрый доступ</div>
+      <div className="admin-grid" style={{ paddingBottom: 32 }}>
+        {[
+          { to: "/courses",     icon: "📚", label: "Мои курсы"   },
+          { to: "/knowledge",   icon: "📖", label: "База знаний" },
+          { to: "/psych-tests", icon: "🧠", label: "Психотесты"  },
+          { to: "/questions",   icon: "💬", label: "Вопросы"     },
+          { to: "/profile",     icon: "👤", label: "Профиль"     },
+        ].map(({ to, icon, label }) => (
+          <Link key={to} to={to} className="admin-tile">
+            <span className="admin-tile-icon">{icon}</span>
+            <span className="admin-tile-label">{label}</span>
+          </Link>
+        ))}
+      </div>
     </div>
   );
 }
@@ -368,16 +382,6 @@ function SuperadminDashboard({ user }) {
         <CourseCard progress={progress} isLoading={pLoading} />
       </div>
 
-      <nav className="quick-nav" style={{ marginTop: 8 }}>
-        <Link to="/courses" className="quick-nav-item">
-          <span className="quick-nav-icon">📚</span>
-          <span className="quick-nav-label">Мои курсы</span>
-        </Link>
-        <Link to="/psych-tests" className="quick-nav-item">
-          <span className="quick-nav-icon">🧠</span>
-          <span className="quick-nav-label">Психотесты</span>
-        </Link>
-      </nav>
     </div>
   );
 }

@@ -265,7 +265,6 @@ function DocFormModal({ doc, onClose }) {
 
 function DocCard({ doc, onEdit, onDelete }) {
   const [viewLoading, setViewLoading] = useState(false);
-  const [imgModal, setImgModal] = useState(null);
 
   async function handleView() {
     setViewLoading(true);
@@ -274,14 +273,14 @@ function DocCard({ doc, onEdit, onDelete }) {
       if (!data.view_url) return;
       if (data.file_type === "pdf") {
         window.open(data.view_url, "_blank", "noopener");
-      } else if (data.file_type === "docx") {
+      } else if (data.file_type === "docx" || data.file_type === "doc") {
         window.open(
           `https://docs.google.com/viewer?url=${encodeURIComponent(data.view_url)}`,
           "_blank",
           "noopener",
         );
       } else {
-        setImgModal(data.view_url);
+        window.open(data.view_url, "_blank", "noopener");
       }
     } catch { /* ignore */ }
     finally { setViewLoading(false); }
@@ -325,9 +324,6 @@ function DocCard({ doc, onEdit, onDelete }) {
         </button>
       </div>
 
-      {imgModal && (
-        <ImgModal src={imgModal} alt={doc.title} onClose={() => setImgModal(null)} />
-      )}
     </div>
   );
 }

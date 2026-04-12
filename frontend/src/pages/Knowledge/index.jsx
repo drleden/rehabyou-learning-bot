@@ -49,17 +49,6 @@ function fileIcon(type) {
   return "📄";
 }
 
-// ── Image viewer modal ────────────────────────────────────────────────────────
-
-function ImgModal({ src, alt, onClose }) {
-  return (
-    <div className="kn-img-overlay" onClick={onClose}>
-      <img className="kn-img-modal" src={src} alt={alt} onClick={e => e.stopPropagation()} />
-      <button className="kn-img-close" onClick={onClose}>✕</button>
-    </div>
-  );
-}
-
 // ── Document reader (for legacy text-content docs) ────────────────────────────
 
 function DocReader({ docId, onBack }) {
@@ -96,7 +85,6 @@ function DocReader({ docId, onBack }) {
 
 function KnCard({ doc, onOpenReader }) {
   const [loading, setLoading] = useState(false);
-  const [imgModal, setImgModal] = useState(null);
 
   async function handleView() {
     setLoading(true);
@@ -112,7 +100,7 @@ function KnCard({ doc, onOpenReader }) {
           "noopener",
         );
       } else {
-        setImgModal(data.view_url);
+        window.open(data.view_url, "_blank", "noopener");
       }
     } catch { /* ignore */ }
     finally { setLoading(false); }
@@ -127,30 +115,24 @@ function KnCard({ doc, onOpenReader }) {
   }
 
   return (
-    <>
-      <button className="kn-card" onClick={handleClick}>
-        <span className="kn-card-icon">{fileIcon(doc.file_type)}</span>
-        <div className="kn-card-body">
-          <div className="kn-card-title">{doc.title}</div>
-          {doc.description && (
-            <div className="kn-card-desc">{doc.description}</div>
-          )}
-          <div className="kn-card-meta">
-            {doc.file_size ? (
-              <span className="kn-file-size">{fmtSize(doc.file_size)}</span>
-            ) : null}
-            <span className="kn-card-date">{formatDate(doc.created_at)}</span>
-          </div>
+    <button className="kn-card" onClick={handleClick}>
+      <span className="kn-card-icon">{fileIcon(doc.file_type)}</span>
+      <div className="kn-card-body">
+        <div className="kn-card-title">{doc.title}</div>
+        {doc.description && (
+          <div className="kn-card-desc">{doc.description}</div>
+        )}
+        <div className="kn-card-meta">
+          {doc.file_size ? (
+            <span className="kn-file-size">{fmtSize(doc.file_size)}</span>
+          ) : null}
+          <span className="kn-card-date">{formatDate(doc.created_at)}</span>
         </div>
-        <span className="kn-card-arrow">
-          {loading ? "⏳" : doc.file_url ? "👁️" : "›"}
-        </span>
-      </button>
-
-      {imgModal && (
-        <ImgModal src={imgModal} alt={doc.title} onClose={() => setImgModal(null)} />
-      )}
-    </>
+      </div>
+      <span className="kn-card-arrow">
+        {loading ? "⏳" : doc.file_url ? "👁️" : "›"}
+      </span>
+    </button>
   );
 }
 

@@ -90,10 +90,11 @@ function KnCard({ doc, onOpenReader }) {
     setLoading(true);
     try {
       const { data } = await api.get(`/api/knowledge/${doc.id}`);
-      if (!data.view_url) return;
+      if (!data.view_url) { console.warn("[Knowledge] view_url is empty, data:", data); return; }
+      console.log("[Knowledge] Opening:", data.view_url, "type:", data.file_type);
       if (data.file_type === "pdf") {
         window.open(data.view_url, "_blank", "noopener");
-      } else if (data.file_type === "docx") {
+      } else if (data.file_type === "docx" || data.file_type === "doc") {
         window.open(
           `https://docs.google.com/viewer?url=${encodeURIComponent(data.view_url)}`,
           "_blank",

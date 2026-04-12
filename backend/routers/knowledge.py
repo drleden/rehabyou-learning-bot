@@ -72,11 +72,13 @@ async def _upload_bytes(data: bytes, key: str, content_type: str) -> None:
 
 async def _presign(key: str) -> str:
     async with _s3_client() as s3:
-        return await s3.generate_presigned_url(
+        url = await s3.generate_presigned_url(
             "get_object",
             Params={"Bucket": settings.YANDEX_BUCKET_NAME, "Key": key},
             ExpiresIn=PRESIGN_TTL,
         )
+    logger.info("Presigned URL generated: bucket=%s key=%s url=%s", settings.YANDEX_BUCKET_NAME, key, url)
+    return url
 
 
 def _detect_type(filename: str, content_type: str) -> Optional[str]:

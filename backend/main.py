@@ -163,6 +163,7 @@ app.include_router(analytics.router,    prefix=f"{API}/analytics",     tags=["an
 app.include_router(integrations.router, prefix=f"{API}/integrations",  tags=["integrations"])
 app.include_router(knowledge.router,    prefix=f"{API}/knowledge",     tags=["knowledge"])
 app.include_router(admin.router,        prefix=f"{API}/admin",         tags=["admin"])
+app.include_router(notifications.router,prefix=f"{API}/notifications", tags=["notifications"])
 
 
 # ── Health check ──────────────────────────────────────────────────────────────

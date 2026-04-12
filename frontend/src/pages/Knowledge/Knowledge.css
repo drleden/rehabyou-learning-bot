@@ -314,6 +314,12 @@
 .kn-reader-content strong { color: #f0f0f0; }
 .kn-reader-content em { color: #bbb; }
 
+/* ── DocReader rich-text tables ──────────────────────────────────────────── */
+
+.kn-reader-content table { border-collapse: collapse; width: 100%; margin-bottom: 14px; }
+.kn-reader-content td, .kn-reader-content th { border: 1px solid rgba(255,255,255,0.12); padding: 6px 10px; font-size: 13px; }
+.kn-reader-content th { background: rgba(255,255,255,0.06); font-weight: 600; }
+
 /* ── Image viewer modal ──────────────────────────────────────────────────── */
 
 .kn-img-overlay {

@@ -73,17 +73,22 @@ function ConfirmModal({ title, message, loading, onConfirm, onClose }) {
   );
 }
 
-// ── Image modal ───────────────────────────────────────────────────────────────
+// ── HTML document reader modal ────────────────────────────────────────────────
 
-function ImgModal({ src, alt, onClose }) {
+function DocViewModal({ title, html, onClose }) {
   useEffect(() => {
     document.body.style.overflow = "hidden";
     return () => { document.body.style.overflow = ""; };
   }, []);
   return (
-    <div className="ak-img-overlay" onClick={onClose}>
-      <img className="ak-img-modal" src={src} alt={alt} onClick={e => e.stopPropagation()} />
-      <button className="ak-img-close" onClick={onClose}>✕</button>
+    <div className="ak-docview-overlay" onClick={onClose}>
+      <div className="ak-docview-modal" onClick={e => e.stopPropagation()}>
+        <div className="ak-docview-hd">
+          <span className="ak-docview-title">{title}</span>
+          <button className="ak-close" onClick={onClose}>✕</button>
+        </div>
+        <div className="ak-docview-body kn-reader-content" dangerouslySetInnerHTML={{ __html: html }} />
+      </div>
     </div>
   );
 }
@@ -265,23 +270,35 @@ function DocFormModal({ doc, onClose }) {
 
 function DocCard({ doc, onEdit, onDelete }) {
   const [viewLoading, setViewLoading] = useState(false);
+  const [converting, setConverting] = useState(false);
+  const [htmlView, setHtmlView] = useState(null); // { title, html }
+  const qc = useQueryClient();
+
+  async function handleConvert() {
+    setConverting(true);
+    try {
+      const { data } = await api.post(`/api/knowledge/${doc.id}/convert`);
+      if (data.content) {
+        setHtmlView({ title: doc.title, html: data.content });
+        qc.invalidateQueries({ queryKey: ["admin-knowledge"] });
+        qc.invalidateQueries({ queryKey: ["knowledge"] });
+      }
+    } catch (ex) {
+      alert(ex?.response?.data?.detail ?? "Ошибка конвертации");
+    } finally { setConverting(false); }
+  }
 
   async function handleView() {
     setViewLoading(true);
     try {
       const { data } = await api.get(`/api/knowledge/${doc.id}`);
-      if (!data.view_url) { console.warn("[AdminKnowledge] view_url is empty, data:", data); return; }
-      console.log("[AdminKnowledge] Opening:", data.view_url, "type:", data.file_type);
-      if (data.file_type === "pdf") {
+      console.log("[AdminKnowledge] doc:", data.file_type, "content:", data.content?.length, "view_url:", data.view_url);
+      if (data.content) {
+        setHtmlView({ title: doc.title, html: data.content });
+      } else if (data.view_url) {
         window.open(data.view_url, "_blank", "noopener");
-      } else if (data.file_type === "docx" || data.file_type === "doc") {
-        window.open(
-          `https://docs.google.com/viewer?url=${encodeURIComponent(data.view_url)}`,
-          "_blank",
-          "noopener",
-        );
       } else {
-        window.open(data.view_url, "_blank", "noopener");
+        console.warn("[AdminKnowledge] no content and no view_url for doc", doc.id);
       }
     } catch { /* ignore */ }
     finally { setViewLoading(false); }
@@ -299,6 +316,17 @@ function DocCard({ doc, onEdit, onDelete }) {
         </div>
       </div>
       <div className="ak-card-actions">
+        {doc.file_type === "docx" && (
+          <button
+            className="ak-action-btn"
+            onClick={handleConvert}
+            disabled={converting}
+            title="Конвертировать DOCX → HTML"
+            style={{ fontSize: 14 }}
+          >
+            {converting ? "⏳" : "🔄"}
+          </button>
+        )}
         {doc.file_url && (
           <button
             className="ak-action-btn ak-action-btn--view"
@@ -325,6 +353,9 @@ function DocCard({ doc, onEdit, onDelete }) {
         </button>
       </div>
 
+      {htmlView && (
+        <DocViewModal title={htmlView.title} html={htmlView.html} onClose={() => setHtmlView(null)} />
+      )}
     </div>
   );
 }

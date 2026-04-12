@@ -483,40 +483,68 @@
 
 .ak-action-btn--view:active { background: rgba(196,105,79,0.2); }
 
-/* ── Image modal ─────────────────────────────────────────────────────────── */
+/* ── Document HTML viewer modal ──────────────────────────────────────────── */
 
-.ak-img-overlay {
+.ak-docview-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0,0,0,0.92);
+  background: rgba(0,0,0,0.82);
   z-index: 400;
   display: flex;
-  align-items: center;
+  align-items: flex-end;
   justify-content: center;
-  padding: 16px;
-  box-sizing: border-box;
 }
 
-.ak-img-modal {
-  max-width: 100%;
-  max-height: 90dvh;
-  border-radius: 10px;
-  object-fit: contain;
+.ak-docview-modal {
+  background: #111;
+  border-radius: 20px 20px 0 0;
+  width: 100%;
+  max-width: 720px;
+  max-height: 92dvh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
 }
 
-.ak-img-close {
-  position: absolute;
-  top: 16px;
-  right: 16px;
-  background: rgba(255,255,255,0.12);
-  border: none;
-  border-radius: 50%;
-  width: 36px;
-  height: 36px;
-  font-size: 16px;
-  color: #fff;
-  cursor: pointer;
+.ak-docview-hd {
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  border-bottom: 1px solid rgba(255,255,255,0.07);
+  flex-shrink: 0;
+  background: #161616;
 }
+
+.ak-docview-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: #f0f0f0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  flex: 1;
+  margin-right: 12px;
+}
+
+.ak-docview-body {
+  flex: 1;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: 20px 20px 40px;
+  color: #ddd;
+  font-size: 15px;
+  line-height: 1.75;
+}
+
+/* rich text inside docview */
+.ak-docview-body h1 { font-size: 22px; font-weight: 700; color: #f0f0f0; margin: 0 0 12px; }
+.ak-docview-body h2 { font-size: 18px; font-weight: 700; color: #f0f0f0; margin: 24px 0 8px; }
+.ak-docview-body h3 { font-size: 15px; font-weight: 700; color: #f0f0f0; margin: 18px 0 6px; }
+.ak-docview-body p  { margin: 0 0 12px; }
+.ak-docview-body ul, .ak-docview-body ol { margin: 0 0 12px; padding-left: 22px; }
+.ak-docview-body li { margin-bottom: 5px; }
+.ak-docview-body strong { color: #f0f0f0; }
+.ak-docview-body table { border-collapse: collapse; width: 100%; margin-bottom: 14px; }
+.ak-docview-body td, .ak-docview-body th { border: 1px solid rgba(255,255,255,0.12); padding: 6px 10px; font-size: 13px; }
+.ak-docview-body th { background: rgba(255,255,255,0.06); font-weight: 600; }

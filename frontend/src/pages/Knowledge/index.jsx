@@ -86,33 +86,26 @@ function DocReader({ docId, onBack }) {
 function KnCard({ doc, onOpenReader }) {
   const [loading, setLoading] = useState(false);
 
-  async function handleView() {
+  async function handleClick() {
+    if (!doc.file_url) { onOpenReader(doc.id); return; }
     setLoading(true);
     try {
       const { data } = await api.get(`/api/knowledge/${doc.id}`);
-      if (!data.view_url) { console.warn("[Knowledge] view_url is empty, data:", data); return; }
-      console.log("[Knowledge] Opening:", data.view_url, "type:", data.file_type);
-      if (data.file_type === "pdf") {
-        window.open(data.view_url, "_blank", "noopener");
-      } else if (data.file_type === "docx" || data.file_type === "doc") {
-        window.open(
-          `https://docs.google.com/viewer?url=${encodeURIComponent(data.view_url)}`,
-          "_blank",
-          "noopener",
-        );
+      console.log("[Knowledge] doc:", data.file_type, "content:", data.content?.length, "view_url:", data.view_url);
+      if (data.content) {
+        // DOCX converted to HTML — show in reader
+        onOpenReader(doc.id);
+      } else if (data.view_url) {
+        if (data.file_type === "pdf") {
+          window.open(data.view_url, "_blank", "noopener");
+        } else {
+          window.open(data.view_url, "_blank", "noopener");
+        }
       } else {
-        window.open(data.view_url, "_blank", "noopener");
+        console.warn("[Knowledge] no content and no view_url for doc", doc.id);
       }
     } catch { /* ignore */ }
     finally { setLoading(false); }
-  }
-
-  function handleClick() {
-    if (doc.file_url) {
-      handleView();
-    } else {
-      onOpenReader(doc.id);
-    }
   }
 
   return (

@@ -7,6 +7,7 @@ GET    /api/knowledge/{id}  — get document + presigned view URL (authenticated
 PUT    /api/knowledge/{id}  — update document, optionally replace file
 DELETE /api/knowledge/{id}  — delete document (superadmin/owner/manager/admin)
 """
+import io
 import logging
 import os
 import uuid
@@ -14,6 +15,7 @@ from datetime import datetime
 from typing import Optional
 
 import aioboto3
+import mammoth
 from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile, status
 from pydantic import BaseModel
 from sqlalchemy import select
@@ -68,6 +70,21 @@ async def _upload_bytes(data: bytes, key: str, content_type: str) -> None:
             Body=data,
             ContentType=content_type,
         )
+
+
+async def _download_bytes(key: str) -> bytes:
+    async with _s3_client() as s3:
+        response = await s3.get_object(Bucket=settings.YANDEX_BUCKET_NAME, Key=key)
+        return await response["Body"].read()
+
+
+def _docx_to_html(data: bytes) -> str:
+    """Convert DOCX bytes to clean HTML using mammoth."""
+    result = mammoth.convert_to_html(io.BytesIO(data))
+    if result.messages:
+        for msg in result.messages:
+            logger.warning("mammoth: %s", msg)
+    return result.value
 
 
 async def _presign(key: str) -> str:
@@ -187,11 +204,19 @@ async def create_document(
     key = f"knowledge/{uuid.uuid4()}.{file_type}"
     await _upload_bytes(data, key, file.content_type or "application/octet-stream")
 
+    html_content = ""
+    if file_type == "docx":
+        try:
+            html_content = _docx_to_html(data)
+            logger.info("DOCX→HTML: %d bytes → %d chars", len(data), len(html_content))
+        except Exception:
+            logger.exception("Failed to convert DOCX to HTML for key=%s", key)
+
     doc = KnowledgeDocument(
         title=title,
         description=description or None,
         category=category,
-        content="",
+        content=html_content,
         file_url=key,
         file_type=file_type,
         file_size=len(data),
@@ -274,6 +299,14 @@ async def update_document(
         doc.file_url = key
         doc.file_type = file_type
         doc.file_size = len(data)
+        if file_type == "docx":
+            try:
+                doc.content = _docx_to_html(data)
+                logger.info("DOCX→HTML update: %d bytes → %d chars", len(data), len(doc.content))
+            except Exception:
+                logger.exception("Failed to convert DOCX to HTML on update, key=%s", key)
+        else:
+            doc.content = ""
 
     await db.commit()
     await db.refresh(doc)
@@ -283,6 +316,39 @@ async def update_document(
     if doc.file_url:
         view_url = await _presign(doc.file_url)
 
+    return _to_detail(doc, view_url)
+
+
+@router.post("/{doc_id}/convert", response_model=DocumentDetail, summary="Конвертировать DOCX → HTML")
+async def convert_document(
+    doc_id: int,
+    _: User = Depends(require_roles(*MANAGE)),
+    db: AsyncSession = Depends(get_db),
+):
+    """Download existing DOCX from S3, convert to HTML, save to content field."""
+    result = await db.execute(
+        select(KnowledgeDocument).where(KnowledgeDocument.id == doc_id)
+    )
+    doc = result.scalar_one_or_none()
+    if doc is None:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "Документ не найден")
+    if doc.file_type != "docx":
+        raise HTTPException(status.HTTP_422_UNPROCESSABLE_ENTITY, "Конвертация доступна только для DOCX файлов")
+    if not doc.file_url:
+        raise HTTPException(status.HTTP_422_UNPROCESSABLE_ENTITY, "Файл не загружен")
+
+    try:
+        data = await _download_bytes(doc.file_url)
+        doc.content = _docx_to_html(data)
+        logger.info("DOCX→HTML convert: doc_id=%s %d bytes → %d chars", doc_id, len(data), len(doc.content))
+    except Exception:
+        logger.exception("Failed to convert doc_id=%s", doc_id)
+        raise HTTPException(status.HTTP_500_INTERNAL_SERVER_ERROR, "Ошибка конвертации файла")
+
+    await db.commit()
+    await db.refresh(doc)
+
+    view_url = await _presign(doc.file_url)
     return _to_detail(doc, view_url)
 
 

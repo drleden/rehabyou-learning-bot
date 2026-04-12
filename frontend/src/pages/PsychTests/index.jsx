@@ -17,7 +17,7 @@ import "./PsychTests.css";
 function useTestList() {
   return useQuery({
     queryKey: ["psych-tests"],
-    queryFn: () => api.get("/api/psych-tests").then((r) => r.data),
+    queryFn: () => api.get("/api/psych-tests/").then((r) => r.data),
     placeholderData: [],
   });
 }

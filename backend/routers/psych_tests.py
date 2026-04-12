@@ -1,12 +1,11 @@
 """
 Psychological tests endpoints.
 
-GET  /                         — list active tests (all auth users)
-GET  /{test_id}                — get test with questions
-POST /{test_id}/submit         — submit answers, compute raw_score, AI interpretation
-GET  /results/me               — own results history
-GET  /results/{user_id}        — results for a specific user (manager/superadmin)
-GET  /seed                     — seed default tests if table empty (superadmin)
+GET  /                     — list active tests
+GET  /{test_id}            — get test with questions
+POST /{test_id}/submit     — submit answers, compute score + interpretation
+GET  /results/me           — own results history
+GET  /results/{user_id}    — results for a specific user (manager/superadmin)
 """
 import json
 from typing import Any
@@ -25,169 +24,64 @@ router = APIRouter()
 
 MANAGE_ROLES = ("superadmin", "owner", "manager", "admin")
 
-# ── Seed data ─────────────────────────────────────────────────────────────────
+# ── Role / type metadata ──────────────────────────────────────────────────────
 
-BELBIN_QUESTIONS = [
-    ("Мне легко взять на себя роль лидера и организовать работу группы.", ["Совершенно не согласен", "Не согласен", "Нейтрально", "Согласен", "Полностью согласен"]),
-    ("Я часто генерирую новые идеи и предложения.", ["Совершенно не согласен", "Не согласен", "Нейтрально", "Согласен", "Полностью согласен"]),
-    ("Мне важно доводить любое дело до конца, проверяя детали.", ["Совершенно не согласен", "Не согласен", "Нейтрально", "Согласен", "Полностью согласен"]),
-    ("Я умею находить нужных людей и налаживать внешние контакты.", ["Совершенно не согласен", "Не согласен", "Нейтрально", "Согласен", "Полностью согласен"]),
-    ("Я предпочитаю анализировать варианты прежде чем принимать решение.", ["Совершенно не согласен", "Не согласен", "Нейтрально", "Согласен", "Полностью согласен"]),
-    ("Мне легко сотрудничать с другими и поддерживать командный дух.", ["Совершенно не согласен", "Не согласен", "Нейтрально", "Согласен", "Полностью согласен"]),
-    ("Я предпочитаю конкретные задачи и чёткие инструкции.", ["Совершенно не согласен", "Не согласен", "Нейтрально", "Согласен", "Полностью согласен"]),
-    ("Я быстро замечаю проблемы и указываю на ошибки в планах.", ["Совергенно не согласен", "Не согласен", "Нейтрально", "Согласен", "Полностью согласен"]),
-]
-
-MBTI_QUESTIONS = [
-    ("В компании малознакомых людей вы обычно:", ["Легко вступаете в разговор и чувствуете прилив сил", "Предпочитаете наблюдать и вступать в разговор избирательно"]),
-    ("При планировании дел вы:", ["Предпочитаете чёткий план и придерживаетесь его", "Оставляете место для гибкости и корректировок"]),
-    ("Принимая решения, вы опираетесь прежде всего на:", ["Логику и объективные факты", "Ценности и влияние на людей"]),
-    ("Вы больше доверяете:", ["Конкретным фактам и опыту", "Интуиции и будущим возможностям"]),
-    ("В конфликтной ситуации вы:", ["Стараетесь найти справедливое решение по правилам", "Стараетесь сохранить отношения и найти компромисс"]),
-    ("Ваш стол и рабочее место обычно:", ["Организованы и всё на своём месте", "Слегка в беспорядке — вы знаете где что лежит"]),
-    ("После насыщенного дня общения вы:", ["Чувствуете подъём энергии", "Нуждаетесь в тишине и одиночестве"]),
-    ("Вы предпочитаете задачи, которые:", ["Имеют чёткий алгоритм решения", "Требуют творческого подхода и нестандартного мышления"]),
-]
-
-BURNOUT_QUESTIONS = [
-    ("Насколько часто вы чувствуете физическое истощение после рабочего дня?", ["Никогда", "Редко", "Иногда", "Часто", "Всегда"]),
-    ("У вас бывают трудности с концентрацией на работе?", ["Никогда", "Редко", "Иногда", "Часто", "Всегда"]),
-    ("Вы чувствуете, что теряете интерес к своей профессиональной деятельности?", ["Никогда", "Редко", "Иногда", "Часто", "Всегда"]),
-    ("Вам бывает трудно настроиться на работу с клиентами?", ["Никогда", "Редко", "Иногда", "Часто", "Всегда"]),
-    ("Вы замечаете у себя раздражительность или цинизм по отношению к работе?", ["Никогда", "Редко", "Иногда", "Часто", "Всегда"]),
-    ("Вы чувствуете, что ваши усилия не ценятся должным образом?", ["Никогда", "Редко", "Иногда", "Часто", "Всегда"]),
-    ("У вас есть ощущение, что вы не справляетесь с объёмом задач?", ["Никогда", "Редко", "Иногда", "Часто", "Всегда"]),
-    ("Вам трудно «переключиться» с работы в нерабочее время?", ["Никогда", "Редко", "Иногда", "Часто", "Всегда"]),
-    ("У вас бывают нарушения сна из-за мыслей о работе?", ["Никогда", "Редко", "Иногда", "Часто", "Всегда"]),
-    ("Вы чувствуете удовлетворение от своей работы?", ["Всегда", "Часто", "Иногда", "Редко", "Никогда"]),
-]
-
-TESTS_SEED = [
-    {
-        "name": "Белбин",
-        "description": "Тест командных ролей Мередита Белбина. Выявляет предпочтительную роль сотрудника в команде: организатор, генератор идей, аналитик, исполнитель и др.",
-        "questions": BELBIN_QUESTIONS,
-    },
-    {
-        "name": "MBTI",
-        "description": "Типологический индикатор Майерс-Бриггс. Определяет тип личности по 4 шкалам: интроверт/экстраверт, сенсорика/интуиция, логика/этика, рациональность/иррациональность.",
-        "questions": MBTI_QUESTIONS,
-    },
-    {
-        "name": "Выгорание",
-        "description": "Опросник профессионального выгорания. Диагностирует уровень эмоционального истощения и помогает выявить сотрудников в зоне риска.",
-        "questions": BURNOUT_QUESTIONS,
-    },
-]
-
-
-async def _ensure_seeded(db: AsyncSession) -> None:
-    existing = await db.scalar(select(PsychTest).limit(1))
-    if existing:
-        return
-    for t in TESTS_SEED:
-        test = PsychTest(name=t["name"], description=t["description"])
-        db.add(test)
-        await db.flush()
-        for pos, (q_text, options) in enumerate(t["questions"]):
-            db.add(PsychTestQuestion(
-                test_id=test.id,
-                question=q_text,
-                options=options,
-                position=pos,
-            ))
-    await db.commit()
-
-
-# ── Static interpretation ─────────────────────────────────────────────────────
+BELBIN_ROLES = ["Координатор", "Генератор идей", "Аналитик", "Исполнитель"]
 
 BELBIN_DESCRIPTIONS = {
-    "Организатор":    "Умеет брать ответственность и организовывать работу команды, распределяя задачи для достижения целей.",
-    "Генератор идей": "Творческий человек — источник новых нестандартных идей, предпочитает работать независимо.",
-    "Финишёр":        "Внимательный к деталям, доводит задачи до конца, обнаруживает ошибки и контролирует качество.",
-    "Исследователь":  "Коммуникабельный и любопытный, находит контакты и ресурсы во внешней среде.",
-    "Аналитик":       "Критически оценивает идеи, находит слабые места в планах, взвешен и беспристрастен.",
-    "Командный игрок":"Поддерживает командный дух и атмосферу сотрудничества, дипломатичен и гибок.",
-    "Исполнитель":    "Практичный и дисциплинированный, реализует идеи в конкретные задачи, надёжен и систематичен.",
-    "Критик":         "Замечает потенциальные проблемы и ошибки, оценивает риски и предупреждает о последствиях.",
+    "Координатор":    "Вы прирождённый лидер. Умеете организовать команду, распределить задачи и направить всех к общей цели.",
+    "Генератор идей": "Вы творческая личность. Генерируете нестандартные идеи и вдохновляете команду на новые решения.",
+    "Аналитик":       "Вы стратегический мыслитель. Объективно оцениваете ситуацию, находите слабые места и предлагаете взвешенные решения.",
+    "Исполнитель":    "Вы надёжный специалист. Качественно выполняете задачи, внимательны к деталям и всегда доводите дело до конца.",
 }
 
 MBTI_DESCRIPTIONS = {
-    "INTJ": "Стратег — независимый, аналитический, с развитым интуитивным мышлением и долгосрочным видением.",
-    "INTP": "Логик — теоретик, ищет закономерности, любит решать сложные интеллектуальные задачи.",
-    "ENTJ": "Командир — прирождённый лидер, уверенный, ориентированный на эффективность и стратегические цели.",
-    "ENTP": "Полемист — изобретательный, любит дискуссии, генерирует нестандартные идеи и видит новые возможности.",
-    "INFJ": "Адвокат — глубокие ценности, ориентирован на смысл и помощь другим, с долгосрочными целями.",
-    "INFP": "Посредник — идеалист, стремится к личностному росту и ищет смысл во всём, что делает.",
-    "ENFJ": "Тренер — вдохновляет и мотивирует людей, отличный коммуникатор с природными лидерскими качествами.",
-    "ENFP": "Борец — энергичный и творческий, широкий круг интересов, умеет зажечь других.",
-    "ISTJ": "Администратор — надёжный, методичный, ориентированный на факты, ценит порядок и традиции.",
-    "ISFJ": "Защитник — заботливый, ответственный, тихо поддерживает других, глубоко предан близким.",
-    "ESTJ": "Менеджер — практичный организатор, ценит порядок, правила и структуру в работе.",
-    "ESFJ": "Консул — общительный, заботится о гармонии в коллективе, ориентирован на людей.",
-    "ISTP": "Виртуоз — практичный и наблюдательный, любит разбираться в механизмах и решать технические задачи.",
-    "ISFP": "Артист — чуткий и добросердечный, живёт настоящим моментом, ценит красоту и гармонию.",
-    "ESTP": "Делец — энергичный, предприимчивый, ориентированный на немедленные результаты и действия.",
-    "ESFP": "Шоумен — общительный, спонтанный, любит радовать людей и вносить позитив в жизнь.",
+    "INTJ": "Стратег. Независимый и решительный мыслитель с высокими стандартами.",
+    "INTP": "Учёный. Логичный и объективный, любит теории и абстрактные идеи.",
+    "ENTJ": "Командир. Смелый лидер, всегда находит путь к цели.",
+    "ENTP": "Полемист. Умный и любопытный, не упускает интеллектуальный вызов.",
+    "INFJ": "Активист. Тихий и мистический, но вдохновляет других своими идеями.",
+    "INFP": "Посредник. Поэтичная душа, всегда готова помочь другим.",
+    "ENFJ": "Тренер. Харизматичный лидер, умеет вдохновлять и мотивировать.",
+    "ENFP": "Борец. Энергичный и творческий, умеет находить общий язык с людьми.",
+    "ISTJ": "Администратор. Надёжный и практичный, ценит порядок и традиции.",
+    "ISFJ": "Защитник. Заботливый и преданный, всегда готов поддержать других.",
+    "ESTJ": "Менеджер. Организованный и целеустремлённый, умеет управлять проектами.",
+    "ESFJ": "Консул. Общительный и внимательный, ставит интересы других на первое место.",
+    "ISTP": "Виртуоз. Смелый экспериментатор, мастер практических решений.",
+    "ISFP": "Артист. Гибкий и привлекательный, всегда открыт новому опыту.",
+    "ESTP": "Делец. Умный и энергичный, любит жить на грани риска.",
+    "ESFP": "Развлекатель. Спонтанный и энергичный, жизнь — это вечеринка.",
 }
 
-
-def _interpret_score(test_name: str, raw_score: dict) -> str:
-    if test_name == "Белбин":
-        sorted_roles = sorted(raw_score.items(), key=lambda x: x[1], reverse=True)
-        top3 = sorted_roles[:3]
-        lines = ["Ваши топ-3 командные роли:"]
-        for i, (role, _score) in enumerate(top3, 1):
-            desc = BELBIN_DESCRIPTIONS.get(role, "")
-            lines.append(f"{i}. {role} — {desc}")
-        return "\n".join(lines)
-
-    if test_name == "MBTI":
-        mbti_type = raw_score.get("type", "")
-        desc = MBTI_DESCRIPTIONS.get(mbti_type, "Тип личности определён.")
-        return f"Ваш тип личности: {mbti_type}\n\n{desc}"
-
-    if test_name == "Выгорание":
-        pct = raw_score.get("percent", 0)
-        level = raw_score.get("level", "")
-        if pct < 30:
-            detail = "Хороший баланс между работой и отдыхом. Вы справляетесь с нагрузкой и находите ресурсы для восстановления."
-        elif pct < 60:
-            detail = "Рекомендуем обратить внимание на отдых. Постарайтесь снизить уровень стресса и уделять больше времени восстановлению."
-        else:
-            detail = "Необходим отдых и поддержка. Рекомендуем поговорить с руководителем и пересмотреть режим работы."
-        return f"Уровень выгорания: {pct}% ({level})\n\n{detail}"
-
-    return "Тест пройден."
-
-
-# ── Raw score computation ─────────────────────────────────────────────────────
+# ── Scoring ───────────────────────────────────────────────────────────────────
 
 def _compute_score(test_name: str, questions: list[PsychTestQuestion], answers: list[Any]) -> dict:
-    """
-    Simple scoring per test type.
-    answers: list aligned to questions (same index).
-    """
+    # ── Белбин ────────────────────────────────────────────────────────────────
+    # 28 вопросов, 4 варианта: индекс 0-3 → роль
     if test_name == "Белбин":
-        roles = ["Организатор", "Генератор идей", "Финишёр", "Исследователь", "Аналитик", "Командный игрок", "Исполнитель", "Критик"]
-        scores = {}
-        for i, (q, ans) in enumerate(zip(questions, answers)):
-            # answer is the option text; map to 1-5 score by position in options list
+        scores = {r: 0 for r in BELBIN_ROLES}
+        for q, ans in zip(questions, answers):
             opts = q.options or []
-            score = (opts.index(ans) + 1) if ans in opts else 3
-            role = roles[i] if i < len(roles) else f"Роль {i+1}"
-            scores[role] = score
+            idx = opts.index(ans) if ans in opts else -1
+            if 0 <= idx < len(BELBIN_ROLES):
+                scores[BELBIN_ROLES[idx]] += 1
         return scores
 
+    # ── MBTI ──────────────────────────────────────────────────────────────────
+    # 32 вопроса блоками по 8: EI / SN / TF / JP
+    # Вариант 0 → первая буква пары, вариант 1 → вторая
     if test_name == "MBTI":
-        # Each question maps to a dimension; answer index 0 = first letter, 1 = second
-        dims = [("E", "I"), ("J", "P"), ("T", "F"), ("S", "N"), ("T", "F"), ("J", "P"), ("I", "E"), ("S", "N")]
-        counts: dict[str, int] = {"E": 0, "I": 0, "S": 0, "N": 0, "T": 0, "F": 0, "J": 0, "P": 0}
+        SCALES = [("E", "I"), ("S", "N"), ("T", "F"), ("J", "P")]
+        counts: dict[str, int] = {c: 0 for pair in SCALES for c in pair}
         for i, (q, ans) in enumerate(zip(questions, answers)):
+            scale_idx = i // 8
+            if scale_idx >= len(SCALES):
+                continue
+            letters = SCALES[scale_idx]
             opts = q.options or []
-            idx = opts.index(ans) if ans in opts else 0
-            dim = dims[i] if i < len(dims) else ("E", "I")
-            letter = dim[idx] if idx < 2 else dim[0]
+            ans_idx = opts.index(ans) if ans in opts else 0
+            letter = letters[min(ans_idx, 1)]
             counts[letter] = counts.get(letter, 0) + 1
         mbti_type = (
             ("E" if counts["E"] >= counts["I"] else "I") +
@@ -197,18 +91,21 @@ def _compute_score(test_name: str, questions: list[PsychTestQuestion], answers: 
         )
         return {"type": mbti_type, "counts": counts}
 
+    # ── Выгорание ─────────────────────────────────────────────────────────────
+    # 16 вопросов, варианты: Никогда(0) Иногда(1) Часто(2) Постоянно(3)
+    # Вопросы 11-16 (индексы 10-15) — обратная шкала
     if test_name == "Выгорание":
-        # 5-point scale where higher = more burnout (last q is reversed)
+        SCORE_MAP = {"Никогда": 0, "Иногда": 1, "Часто": 2, "Постоянно": 3}
         total = 0
         for i, (q, ans) in enumerate(zip(questions, answers)):
-            opts = q.options or []
-            score = (opts.index(ans) + 1) if ans in opts else 3
+            raw = SCORE_MAP.get(str(ans), 0)
+            score = (3 - raw) if i >= 10 else raw
             total += score
-        max_score = len(questions) * 5
-        pct = round(total / max_score * 100)
-        if pct < 30:
+        max_score = len(questions) * 3  # 16 * 3 = 48
+        pct = round(total / max_score * 100) if max_score > 0 else 0
+        if pct < 25:
             level = "Низкий"
-        elif pct < 55:
+        elif pct < 50:
             level = "Умеренный"
         elif pct < 75:
             level = "Высокий"
@@ -216,14 +113,57 @@ def _compute_score(test_name: str, questions: list[PsychTestQuestion], answers: 
             level = "Критический"
         return {"total": total, "max": max_score, "percent": pct, "level": level}
 
-    # Generic: just count answers
     return {"answers_count": len(answers)}
+
+
+# ── Interpretation ────────────────────────────────────────────────────────────
+
+def _interpret_score(test_name: str, raw_score: dict) -> str:
+    # ── Белбин ────────────────────────────────────────────────────────────────
+    if test_name == "Белбин":
+        sorted_roles = sorted(raw_score.items(), key=lambda x: x[1], reverse=True)
+        top2 = [(r, s) for r, s in sorted_roles if s > 0][:2]
+        if not top2:
+            return "Результаты теста не определены."
+        lines = ["Ваши ведущие командные роли:"]
+        for i, (role, _) in enumerate(top2, 1):
+            desc = BELBIN_DESCRIPTIONS.get(role, "")
+            lines.append(f"\n{i}. {role}\n{desc}")
+        return "\n".join(lines)
+
+    # ── MBTI ──────────────────────────────────────────────────────────────────
+    if test_name == "MBTI":
+        mbti_type = raw_score.get("type", "")
+        desc = MBTI_DESCRIPTIONS.get(mbti_type, "Тип личности определён.")
+        return f"Ваш тип личности: {mbti_type} — {desc}"
+
+    # ── Выгорание ─────────────────────────────────────────────────────────────
+    if test_name == "Выгорание":
+        pct = raw_score.get("percent", 0)
+        level = raw_score.get("level", "")
+        details = {
+            "Низкий":      "Хороший баланс между работой и отдыхом. Продолжайте в том же духе!",
+            "Умеренный":   "Стоит обратить внимание на восстановление и отдых.",
+            "Высокий":     "Рекомендуется снизить нагрузку и поговорить с руководителем.",
+            "Критический": "Необходим полноценный отдых и профессиональная поддержка.",
+        }
+        THRESHOLDS = {
+            "Низкий": "0–25%",
+            "Умеренный": "25–50%",
+            "Высокий": "50–75%",
+            "Критический": "75–100%",
+        }
+        detail = details.get(level, "")
+        threshold = THRESHOLDS.get(level, "")
+        return f"Уровень выгорания: {level} ({threshold}) — {pct}%\n\n{detail}"
+
+    return "Тест пройден."
 
 
 # ── Schemas ───────────────────────────────────────────────────────────────────
 
 class SubmitIn(BaseModel):
-    answers: list[Any]  # ordered list matching question positions
+    answers: list[Any]
 
 
 # ── Endpoints ─────────────────────────────────────────────────────────────────
@@ -233,15 +173,12 @@ async def list_tests(
     db: AsyncSession = Depends(get_db),
     _: User = Depends(get_current_user),
 ):
-    await _ensure_seeded(db)
-    rows = await db.execute(select(PsychTest).where(PsychTest.is_active == True).order_by(PsychTest.id))
+    rows = await db.execute(
+        select(PsychTest).where(PsychTest.is_active == True).order_by(PsychTest.id)
+    )
     tests = rows.scalars().all()
     return [
-        {
-            "id": t.id,
-            "name": t.name,
-            "description": t.description,
-        }
+        {"id": t.id, "name": t.name, "description": t.description}
         for t in tests
     ]
 
@@ -257,7 +194,6 @@ async def get_my_results(
         .where(PsychTestResult.user_id == actor.id)
         .order_by(PsychTestResult.created_at.desc())
     )
-    results = rows.all()
     return [
         {
             "id": r.id,
@@ -267,7 +203,7 @@ async def get_my_results(
             "ai_interpretation": r.ai_interpretation,
             "created_at": r.created_at.isoformat(),
         }
-        for r, t in results
+        for r, t in rows.all()
     ]
 
 
@@ -283,7 +219,6 @@ async def get_user_results(
         .where(PsychTestResult.user_id == user_id)
         .order_by(PsychTestResult.created_at.desc())
     )
-    results = rows.all()
     return [
         {
             "id": r.id,
@@ -293,7 +228,7 @@ async def get_user_results(
             "ai_interpretation": r.ai_interpretation,
             "created_at": r.created_at.isoformat(),
         }
-        for r, t in results
+        for r, t in rows.all()
     ]
 
 
@@ -303,7 +238,6 @@ async def get_test(
     db: AsyncSession = Depends(get_db),
     _: User = Depends(get_current_user),
 ):
-    await _ensure_seeded(db)
     test = await db.get(PsychTest, test_id)
     if not test or not test.is_active:
         raise HTTPException(status_code=404, detail="Test not found")
@@ -318,12 +252,7 @@ async def get_test(
         "name": test.name,
         "description": test.description,
         "questions": [
-            {
-                "id": q.id,
-                "question": q.question,
-                "options": q.options,
-                "position": q.position,
-            }
+            {"id": q.id, "question": q.question, "options": q.options, "position": q.position}
             for q in questions
         ],
     }
@@ -350,7 +279,7 @@ async def submit_test(
     if len(body.answers) != len(questions):
         raise HTTPException(
             status_code=422,
-            detail=f"Expected {len(questions)} answers, got {len(body.answers)}",
+            detail=f"Ожидается {len(questions)} ответов, получено {len(body.answers)}",
         )
 
     raw_score = _compute_score(test.name, questions, body.answers)

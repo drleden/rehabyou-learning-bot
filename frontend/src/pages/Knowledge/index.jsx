@@ -107,7 +107,7 @@ function KnCard({ doc, onOpenReader }) {
         window.open(data.view_url, "_blank", "noopener");
       } else if (data.file_type === "docx") {
         window.open(
-          `https://docs.google.com/viewer?url=${encodeURIComponent(data.view_url)}&embedded=true`,
+          `https://docs.google.com/viewer?url=${encodeURIComponent(data.view_url)}`,
           "_blank",
           "noopener",
         );

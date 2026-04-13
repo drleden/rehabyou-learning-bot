@@ -1,5 +1,6 @@
 import CourseCard from '../components/CourseCard';
 import SectionHeader from '../components/SectionHeader';
+import useAuthStore from '../store/authStore';
 
 const continueCourse = {
   id: 1,
@@ -63,7 +64,15 @@ const knowledgeArticles = [
   },
 ];
 
+function getInitials(name) {
+  if (!name) return '?';
+  const parts = name.trim().split(/\s+/);
+  return parts.map((p) => p[0]).join('').toUpperCase().slice(0, 2);
+}
+
 export default function Catalog() {
+  const user = useAuthStore((s) => s.user);
+
   return (
     <div className="bg-white min-h-screen">
       {/* Header */}
@@ -71,10 +80,14 @@ export default function Catalog() {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-xl font-extrabold text-gray-900">Каталог</h1>
-            <p className="text-sm text-gray-500 mt-0.5">Добро пожаловать!</p>
+            <p className="text-sm text-gray-500 mt-0.5">
+              {user ? `Привет, ${user.full_name.split(' ')[0]}!` : 'Добро пожаловать!'}
+            </p>
           </div>
           <div className="w-10 h-10 rounded-full bg-accent/10 flex items-center justify-center">
-            <span className="text-accent font-bold text-sm">АИ</span>
+            <span className="text-accent font-bold text-sm">
+              {getInitials(user?.full_name)}
+            </span>
           </div>
         </div>
       </header>

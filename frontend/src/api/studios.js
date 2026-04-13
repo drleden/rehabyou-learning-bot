@@ -1,12 +1,12 @@
 import client from './client';
 
 export async function getStudios() {
-  const { data } = await client.get('/studios');
+  const { data } = await client.get('/studios/');
   return data;
 }
 
 export async function createStudio(body) {
-  const { data } = await client.post('/studios', body);
+  const { data } = await client.post('/studios/', body);
   return data;
 }
 

@@ -282,6 +282,36 @@ export default function Employees() {
   );
 }
 
+function capitalizeWords(str) {
+  return str.replace(/(^|\s)\S/g, (ch) => ch.toUpperCase());
+}
+
+function formatPhoneInput(value) {
+  const digits = value.replace(/\D/g, '');
+  if (digits.length === 0) return '';
+
+  let normalized = digits;
+  if (normalized.startsWith('8') && normalized.length > 1) {
+    normalized = '7' + normalized.slice(1);
+  }
+  if (!normalized.startsWith('7')) {
+    normalized = '7' + normalized;
+  }
+
+  let formatted = '+7';
+  if (normalized.length > 1) formatted += ' ' + normalized.slice(1, 4);
+  if (normalized.length > 4) formatted += ' ' + normalized.slice(4, 7);
+  if (normalized.length > 7) formatted += ' ' + normalized.slice(7, 9);
+  if (normalized.length > 9) formatted += ' ' + normalized.slice(9, 11);
+  return formatted;
+}
+
+function phoneToRaw(formatted) {
+  const digits = formatted.replace(/\D/g, '');
+  if (!digits) return '';
+  return '+' + digits;
+}
+
 function AddEmployeeSheet({ onClose, onCreated }) {
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
@@ -291,17 +321,11 @@ function AddEmployeeSheet({ onClose, onCreated }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
-  const normalizePhone = (raw) => {
-    const digits = raw.replace(/\D/g, '');
-    if (!digits) return '';
-    if (digits.startsWith('8') && digits.length === 11) {
-      return '+7' + digits.slice(1);
+  const handlePhoneChange = (e) => {
+    const formatted = formatPhoneInput(e.target.value);
+    if (formatted.replace(/\D/g, '').length <= 11) {
+      setPhone(formatted);
     }
-    if (digits.startsWith('7') && digits.length === 11) {
-      return '+' + digits;
-    }
-    if (digits.startsWith('+')) return raw;
-    return '+7' + digits;
   };
 
   const handleSubmit = async (e) => {
@@ -312,7 +336,7 @@ function AddEmployeeSheet({ onClose, onCreated }) {
     try {
       await createUser({
         full_name: name.trim(),
-        phone: normalizePhone(phone),
+        phone: phoneToRaw(phone),
         password,
         role,
       });
@@ -336,15 +360,16 @@ function AddEmployeeSheet({ onClose, onCreated }) {
           <input
             type="text"
             value={name}
-            onChange={(e) => setName(e.target.value)}
+            onChange={(e) => setName(capitalizeWords(e.target.value))}
+            autoCapitalize="words"
             placeholder="Имя Фамилия"
             className="w-full h-11 px-4 rounded-xl border border-gray-200 bg-surface text-sm focus:outline-none focus:ring-2 focus:ring-accent/30 focus:border-accent"
           />
           <input
             type="tel"
             value={phone}
-            onChange={(e) => setPhone(e.target.value)}
-            placeholder="+7 900 000-00-00"
+            onChange={handlePhoneChange}
+            placeholder="+7 900 000 00 00"
             className="w-full h-11 px-4 rounded-xl border border-gray-200 bg-surface text-sm focus:outline-none focus:ring-2 focus:ring-accent/30 focus:border-accent"
           />
           <div className="relative">

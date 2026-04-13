@@ -1,7 +1,7 @@
 import client from './client';
 
 export async function getUsers(params = {}) {
-  const { data } = await client.get('/users', { params });
+  const { data } = await client.get('/users/', { params });
   return data;
 }
 
@@ -11,7 +11,7 @@ export async function getUser(id) {
 }
 
 export async function createUser(body) {
-  const { data } = await client.post('/users', body);
+  const { data } = await client.post('/users/', body);
   return data;
 }
 

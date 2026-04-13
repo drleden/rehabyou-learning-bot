@@ -35,24 +35,7 @@ async def snapshot(
     )
     users_by_studio = {row[0]: row[1] for row in studio_result.all()}
 
-    # 3. Course progress
-    course_progress_result = await db.execute(
-        select(
-            Course.id,
-            Course.title,
-            func.count(distinct(case(
-                (LessonProgress.status == LessonProgressStatus.in_progress, LessonProgress.user_id),
-                else_=None,
-            ))).label("started"),
-            func.count(distinct(case(
-                (LessonProgress.status == LessonProgressStatus.completed, LessonProgress.user_id),
-                else_=None,
-            ))).label("completed"),
-        )
-        .outerjoin(Course.modules_rel if hasattr(Course, 'modules_rel') else None)
-        # Use raw join instead
-    )
-    # Simplified: use separate queries for clarity
+    # 3. Course progress (separate queries per course for clarity)
     from app.models.course import Module
     from app.models.lesson import Lesson
 

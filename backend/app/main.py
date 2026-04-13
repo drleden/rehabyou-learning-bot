@@ -27,6 +27,13 @@ app.include_router(permissions.router, prefix=PREFIX)
 app.include_router(export.router, prefix=PREFIX)
 
 
+@app.on_event("startup")
+async def show_routes():
+    for route in app.routes:
+        if hasattr(route, "methods"):
+            print(f"{route.methods} {route.path}")
+
+
 @app.get("/health")
 async def health():
     return {"status": "ok"}

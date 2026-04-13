@@ -100,15 +100,12 @@ export default function Courses() {
               onClick={() => navigate(`/admin/courses/${course.id}`)}
               className="w-full bg-white rounded-2xl shadow-sm border border-gray-50 overflow-hidden text-left active:scale-[0.99] transition-transform"
             >
-              <div className="aspect-video bg-gradient-to-br from-accent/20 to-orange-50 relative">
+              <div className="h-40 relative" style={{background: course.cover_url ? undefined : 'linear-gradient(135deg, #e8571a 0%, #f7a24b 100%)'}}>
                 {course.cover_url ? (
                   <img src={course.cover_url} alt="" className="w-full h-full object-cover" />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center">
-                    <svg className="w-12 h-12 text-accent/30" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M15.91 11.672a.375.375 0 010 .656l-5.603 3.113a.375.375 0 01-.557-.328V8.887c0-.286.307-.466.557-.327l5.603 3.112z" />
-                    </svg>
+                    <span className="text-4xl opacity-40">📚</span>
                   </div>
                 )}
                 <span className={`absolute top-2 right-2 text-[10px] font-semibold px-2 py-0.5 rounded-full ${

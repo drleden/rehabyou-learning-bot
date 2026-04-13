@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Body, Depends, HTTPException, status
 from sqlalchemy import distinct, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -6,7 +6,7 @@ from app.database import get_db
 from app.deps import require_role
 from app.models.studio import Studio, UserStudio
 from app.models.user import User, UserRole
-from app.schemas.studio import StudioCreate, StudioOut, StudioUpdate, UserStudioCreate, UserStudioOut
+from app.schemas.studio import StudioCreate, StudioOut, StudioUpdate, UserStudioOut
 
 router = APIRouter(prefix="/studios", tags=["studios"])
 
@@ -72,11 +72,11 @@ async def update_studio(
 @router.post("/{studio_id}/members", response_model=UserStudioOut, status_code=status.HTTP_201_CREATED)
 async def add_member(
     studio_id: int,
-    body: UserStudioCreate,
+    user_id: int = Body(..., embed=True),
     current_user: User = Depends(require_role(UserRole.manager)),
     db: AsyncSession = Depends(get_db),
 ):
-    link = UserStudio(user_id=body.user_id, studio_id=studio_id)
+    link = UserStudio(user_id=user_id, studio_id=studio_id)
     db.add(link)
     await db.commit()
     await db.refresh(link)

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { getCourses, createCourse } from '../../api/courses';
+import { getCourses, createCourse, importCourse } from '../../api/courses';
 import { getPresignedUrl, uploadToS3 } from '../../api/upload';
 
 const ROLE_OPTIONS = [
@@ -23,6 +23,7 @@ export default function Courses() {
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState(null);
   const [showAdd, setShowAdd] = useState(false);
+  const [showImport, setShowImport] = useState(false);
 
   const fetchCourses = async () => {
     setLoading(true);
@@ -50,14 +51,25 @@ export default function Courses() {
             </button>
             <h1 className="text-xl font-extrabold text-gray-900">Курсы</h1>
           </div>
-          <button
-            onClick={() => setShowAdd(true)}
-            className="w-10 h-10 bg-accent text-white rounded-xl flex items-center justify-center shadow-sm shadow-accent/20 active:scale-95"
-          >
-            <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
-            </svg>
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setShowImport(true)}
+              className="w-10 h-10 bg-surface text-gray-600 rounded-xl flex items-center justify-center border border-gray-200 active:scale-95"
+              title="Импорт JSON"
+            >
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+              </svg>
+            </button>
+            <button
+              onClick={() => setShowAdd(true)}
+              className="w-10 h-10 bg-accent text-white rounded-xl flex items-center justify-center shadow-sm shadow-accent/20 active:scale-95"
+            >
+              <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
+              </svg>
+            </button>
+          </div>
         </div>
         <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-1">
           {FILTERS.map((f) => (
@@ -126,6 +138,13 @@ export default function Courses() {
         <AddCourseSheet
           onClose={() => setShowAdd(false)}
           onCreated={(id) => { setShowAdd(false); navigate(`/admin/courses/${id}`); }}
+        />
+      )}
+
+      {showImport && (
+        <ImportCourseSheet
+          onClose={() => setShowImport(false)}
+          onImported={() => { setShowImport(false); fetchCourses(); }}
         />
       )}
     </div>
@@ -247,6 +266,59 @@ function AddCourseSheet({ onClose, onCreated }) {
             className="w-full h-11 bg-accent hover:bg-accent-hover disabled:opacity-60 text-white font-semibold rounded-xl transition-colors text-sm"
           >
             {loading ? 'Создание...' : 'Создать курс'}
+          </button>
+        </form>
+      </div>
+    </div>
+  );
+}
+
+function ImportCourseSheet({ onClose, onImported }) {
+  const [json, setJson] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError('');
+    let parsed;
+    try {
+      parsed = JSON.parse(json);
+    } catch {
+      setError('Невалидный JSON');
+      return;
+    }
+    setLoading(true);
+    try {
+      await importCourse(parsed);
+      onImported();
+    } catch (err) {
+      setError(err.response?.data?.detail || 'Ошибка импорта');
+    }
+    setLoading(false);
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-end justify-center" onClick={onClose}>
+      <div className="absolute inset-0 bg-black/30" />
+      <div className="relative w-full max-w-lg bg-white rounded-t-3xl p-5 pb-8 max-h-[85vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+        <div className="w-10 h-1 bg-gray-200 rounded-full mx-auto mb-4" />
+        <h3 className="font-bold text-lg text-gray-900 mb-4">Импорт курса из JSON</h3>
+        <form onSubmit={handleSubmit} className="space-y-3">
+          <textarea
+            value={json}
+            onChange={(e) => setJson(e.target.value)}
+            placeholder='{"title": "...", "modules": [...]}'
+            rows={12}
+            className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-surface text-xs font-mono resize-none focus:outline-none focus:ring-2 focus:ring-accent/30 focus:border-accent"
+          />
+          {error && <p className="text-sm text-red-500">{error}</p>}
+          <button
+            type="submit"
+            disabled={loading || !json.trim()}
+            className="w-full h-11 bg-accent hover:bg-accent-hover disabled:opacity-60 text-white font-semibold rounded-xl transition-colors text-sm"
+          >
+            {loading ? 'Импорт...' : 'Загрузить курс'}
           </button>
         </form>
       </div>

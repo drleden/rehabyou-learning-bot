@@ -57,3 +57,8 @@ export async function updateLesson(id, body) {
 export async function deleteLesson(id) {
   await client.delete(`/lessons/${id}`);
 }
+
+export async function importCourse(json) {
+  const { data } = await client.post('/courses/import', json);
+  return data;
+}

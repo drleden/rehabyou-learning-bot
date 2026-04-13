@@ -154,6 +154,67 @@ async def delete_course(
     await db.commit()
 
 
+# --- Import ---
+
+class LessonImport(BaseModel):
+    title: str
+    content_text: str | None = None
+    video_url: str | None = None
+    order_index: int = 0
+
+
+class ModuleImport(BaseModel):
+    title: str
+    order_index: int = 0
+    lessons: list[LessonImport] = []
+
+
+class CourseImport(BaseModel):
+    title: str
+    description: str | None = None
+    target_roles: list[str] = []
+    modules: list[ModuleImport] = []
+
+
+@router.post("/import", response_model=CourseOut, status_code=status.HTTP_201_CREATED)
+async def import_course(
+    body: CourseImport,
+    current_user: User = Depends(require_role(UserRole.superadmin)),
+    db: AsyncSession = Depends(get_db),
+):
+    course = Course(
+        title=body.title,
+        description=body.description,
+        target_roles=body.target_roles,
+        created_by=current_user.id,
+    )
+    db.add(course)
+    await db.flush()
+
+    for mod_data in body.modules:
+        module = Module(
+            course_id=course.id,
+            title=mod_data.title,
+            order_index=mod_data.order_index,
+        )
+        db.add(module)
+        await db.flush()
+
+        for les_data in mod_data.lessons:
+            lesson = Lesson(
+                module_id=module.id,
+                title=les_data.title,
+                content_text=les_data.content_text,
+                video_url=les_data.video_url,
+                order_index=les_data.order_index,
+            )
+            db.add(lesson)
+
+    await db.commit()
+    await db.refresh(course)
+    return CourseOut.model_validate(course)
+
+
 # --- Modules ---
 
 @router.get("/{course_id}/modules", response_model=list[ModuleOut])

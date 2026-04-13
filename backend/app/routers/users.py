@@ -21,6 +21,7 @@ async def list_users(
     role: UserRole | None = None,
     is_active: bool | None = None,
     search: str | None = None,
+    studio_id: int | None = None,
     limit: int = Query(50, le=200),
     offset: int = 0,
     current_user: User = Depends(require_role(UserRole.manager)),
@@ -35,6 +36,11 @@ async def list_users(
         pattern = f"%{search}%"
         query = query.where(
             or_(User.full_name.ilike(pattern), User.phone.ilike(pattern))
+        )
+    if studio_id is not None:
+        from app.models.studio import UserStudio
+        query = query.join(UserStudio, User.id == UserStudio.user_id).where(
+            UserStudio.studio_id == studio_id, UserStudio.is_active.is_(True)
         )
     query = query.offset(offset).limit(limit)
 

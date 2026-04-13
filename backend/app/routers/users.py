@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, Query, status
-from sqlalchemy import select
+from sqlalchemy import or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import get_db
@@ -20,6 +20,7 @@ async def get_me(current_user: User = Depends(get_current_user)):
 async def list_users(
     role: UserRole | None = None,
     is_active: bool | None = None,
+    search: str | None = None,
     limit: int = Query(50, le=200),
     offset: int = 0,
     current_user: User = Depends(require_role(UserRole.manager)),
@@ -30,6 +31,11 @@ async def list_users(
         query = query.where(User.role == role)
     if is_active is not None:
         query = query.where(User.is_active == is_active)
+    if search:
+        pattern = f"%{search}%"
+        query = query.where(
+            or_(User.full_name.ilike(pattern), User.phone.ilike(pattern))
+        )
     query = query.offset(offset).limit(limit)
 
     result = await db.execute(query)
@@ -95,6 +101,10 @@ async def delete_user(
     current_user: User = Depends(require_role(UserRole.superadmin)),
     db: AsyncSession = Depends(get_db),
 ):
+    if user_id == current_user.id:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail="Cannot delete yourself"
+        )
     result = await db.execute(select(User).where(User.id == user_id))
     user = result.scalar_one_or_none()
     if user is None:

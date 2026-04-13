@@ -3,6 +3,8 @@ import Login from './pages/Login';
 import Catalog from './pages/Catalog';
 import CoursePage from './pages/CoursePage';
 import AdminDashboard from './pages/AdminDashboard';
+import Employees from './pages/admin/Employees';
+import Studios from './pages/admin/Studios';
 import Layout from './components/Layout';
 import ProtectedRoute from './components/ProtectedRoute';
 
@@ -28,6 +30,22 @@ export default function App() {
         element={
           <ProtectedRoute minimumRole="manager">
             <AdminDashboard />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/admin/employees"
+        element={
+          <ProtectedRoute minimumRole="manager">
+            <Employees />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/admin/studios"
+        element={
+          <ProtectedRoute minimumRole="owner">
+            <Studios />
           </ProtectedRoute>
         }
       />

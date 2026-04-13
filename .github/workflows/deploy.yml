@@ -3,7 +3,7 @@ name: Deploy to VPS
 on:
   push:
     branches:
-      - main
+      - claude/new-app-setup-BvOPl
 
 jobs:
   deploy:
@@ -18,23 +18,23 @@ jobs:
       - name: Setup SSH agent
         uses: webfactory/ssh-agent@v0.9.0
         with:
-          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+          ssh-private-key: ${{ secrets.VPS_SSH_KEY }}
 
       - name: Add VPS to known hosts
         run: |
           mkdir -p ~/.ssh
-          ssh-keyscan -H ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts
+          ssh-keyscan -H ${{ secrets.VPS_HOST }} >> ~/.ssh/known_hosts
 
       - name: Deploy
         run: |
-          ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} 'bash -s' << 'ENDSSH'
+          ssh ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} 'bash -s' << 'ENDSSH'
             set -e
-            cd /opt/rehabyou
-            git pull origin main
+            cd /opt/rehabyou-new
+            git pull origin claude/new-app-setup-BvOPl
             docker compose up -d --build --remove-orphans
             docker compose exec -T backend alembic upgrade head
             docker image prune -f
-            echo "Done at $(date)"
+            echo "Deploy done at $(date)"
           ENDSSH
 
       - name: Notify success

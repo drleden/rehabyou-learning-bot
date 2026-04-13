@@ -1,6 +1,7 @@
+import { useNavigate } from 'react-router-dom';
 import CourseCard from '../components/CourseCard';
 import SectionHeader from '../components/SectionHeader';
-import useAuthStore from '../store/authStore';
+import useAuthStore, { hasMinimumRole } from '../store/authStore';
 
 const continueCourse = {
   id: 1,
@@ -71,7 +72,9 @@ function getInitials(name) {
 }
 
 export default function Catalog() {
+  const navigate = useNavigate();
   const user = useAuthStore((s) => s.user);
+  const isManager = user && hasMinimumRole(user.role, 'manager');
 
   return (
     <div className="bg-white min-h-screen">
@@ -84,11 +87,14 @@ export default function Catalog() {
               {user ? `Привет, ${user.full_name.split(' ')[0]}!` : 'Добро пожаловать!'}
             </p>
           </div>
-          <div className="w-10 h-10 rounded-full bg-accent/10 flex items-center justify-center">
+          <button
+            onClick={() => navigate(isManager ? '/admin' : '/profile')}
+            className="w-10 h-10 rounded-full bg-accent/10 flex items-center justify-center active:scale-95 transition-transform"
+          >
             <span className="text-accent font-bold text-sm">
               {getInitials(user?.full_name)}
             </span>
-          </div>
+          </button>
         </div>
       </header>
 

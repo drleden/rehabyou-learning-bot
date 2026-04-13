@@ -274,21 +274,42 @@ function AddCourseSheet({ onClose, onCreated }) {
 }
 
 function ImportCourseSheet({ onClose, onImported }) {
-  const [json, setJson] = useState('');
+  const [parsed, setParsed] = useState(null);
+  const [fileName, setFileName] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
+  const countLessons = (data) =>
+    (data.modules || []).reduce((sum, m) => sum + (m.lessons || []).length, 0);
+
+  const handleFile = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setError('');
+    setParsed(null);
+    setFileName(file.name);
+
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      try {
+        const data = JSON.parse(ev.target.result);
+        if (!data.title) {
+          setError('JSON должен содержать поле "title"');
+          return;
+        }
+        setParsed(data);
+      } catch {
+        setError('Файл не является валидным JSON');
+      }
+    };
+    reader.readAsText(file);
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError('');
-    let parsed;
-    try {
-      parsed = JSON.parse(json);
-    } catch {
-      setError('Невалидный JSON');
-      return;
-    }
+    if (!parsed) return;
     setLoading(true);
+    setError('');
     try {
       await importCourse(parsed);
       onImported();
@@ -301,21 +322,42 @@ function ImportCourseSheet({ onClose, onImported }) {
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center" onClick={onClose}>
       <div className="absolute inset-0 bg-black/30" />
-      <div className="relative w-full max-w-lg bg-white rounded-t-3xl p-5 pb-8 max-h-[85vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+      <div className="relative w-full max-w-lg bg-white rounded-t-3xl p-5 pb-8" onClick={(e) => e.stopPropagation()}>
         <div className="w-10 h-1 bg-gray-200 rounded-full mx-auto mb-4" />
         <h3 className="font-bold text-lg text-gray-900 mb-4">Импорт курса из JSON</h3>
         <form onSubmit={handleSubmit} className="space-y-3">
-          <textarea
-            value={json}
-            onChange={(e) => setJson(e.target.value)}
-            placeholder='{"title": "...", "modules": [...]}'
-            rows={12}
-            className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-surface text-xs font-mono resize-none focus:outline-none focus:ring-2 focus:ring-accent/30 focus:border-accent"
-          />
+          {parsed ? (
+            <div className="flex items-center gap-3 p-3 bg-green-50 rounded-xl">
+              <svg className="w-5 h-5 text-green-600 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+              </svg>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm text-green-800 font-medium truncate">{fileName}</p>
+                <p className="text-xs text-green-600 mt-0.5">
+                  {(parsed.modules || []).length} модулей · {countLessons(parsed)} уроков
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => { setParsed(null); setFileName(''); setError(''); }}
+                className="text-green-600 hover:text-red-500 text-xs font-medium"
+              >
+                Убрать
+              </button>
+            </div>
+          ) : (
+            <label className="flex flex-col items-center justify-center h-28 rounded-xl border-2 border-dashed border-gray-200 cursor-pointer hover:border-accent/40 transition-colors">
+              <input type="file" accept=".json" onChange={handleFile} className="hidden" />
+              <svg className="w-8 h-8 text-gray-300 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m6.75 12l-3-3m0 0l-3 3m3-3v6m-1.5-15H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
+              </svg>
+              <span className="text-sm text-gray-400">Выбрать JSON файл</span>
+            </label>
+          )}
           {error && <p className="text-sm text-red-500">{error}</p>}
           <button
             type="submit"
-            disabled={loading || !json.trim()}
+            disabled={loading || !parsed}
             className="w-full h-11 bg-accent hover:bg-accent-hover disabled:opacity-60 text-white font-semibold rounded-xl transition-colors text-sm"
           >
             {loading ? 'Импорт...' : 'Загрузить курс'}

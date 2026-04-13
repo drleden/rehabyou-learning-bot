@@ -1,10 +1,12 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
+from pydantic import BaseModel
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import get_db
 from app.deps import get_current_user, require_role
 from app.models.course import Course, Module
+from app.models.lesson import Lesson
 from app.models.user import User, UserRole
 from app.schemas.course import (
     CourseCreate,
@@ -14,27 +16,38 @@ from app.schemas.course import (
     ModuleOut,
     ModuleUpdate,
 )
+from app.schemas.lesson import LessonOut
 
 router = APIRouter(prefix="/courses", tags=["courses"])
 
 
+class ModuleWithLessons(ModuleOut):
+    lessons: list[LessonOut] = []
+
+
+class CourseDetailOut(CourseOut):
+    modules: list[ModuleWithLessons] = []
+
+
 @router.get("/", response_model=list[CourseOut])
 async def list_courses(
+    is_published: bool | None = None,
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
     query = select(Course).order_by(Course.order_index, Course.id)
-    # Non-managers only see published courses matching their role
     if current_user.role not in (UserRole.manager, UserRole.owner, UserRole.superadmin):
         query = query.where(
             Course.is_published.is_(True),
             Course.target_roles.any(current_user.role.value),
         )
+    elif is_published is not None:
+        query = query.where(Course.is_published == is_published)
     result = await db.execute(query)
     return [CourseOut.model_validate(c) for c in result.scalars().all()]
 
 
-@router.get("/{course_id}", response_model=CourseOut)
+@router.get("/{course_id}", response_model=CourseDetailOut)
 async def get_course(
     course_id: int,
     current_user: User = Depends(get_current_user),
@@ -44,7 +57,22 @@ async def get_course(
     course = result.scalar_one_or_none()
     if course is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Course not found")
-    return CourseOut.model_validate(course)
+
+    modules_result = await db.execute(
+        select(Module).where(Module.course_id == course_id).order_by(Module.order_index, Module.id)
+    )
+    modules = modules_result.scalars().all()
+
+    modules_out = []
+    for m in modules:
+        lessons_result = await db.execute(
+            select(Lesson).where(Lesson.module_id == m.id).order_by(Lesson.order_index, Lesson.id)
+        )
+        lessons = [LessonOut.model_validate(l) for l in lessons_result.scalars().all()]
+        mod = ModuleWithLessons(**ModuleOut.model_validate(m).model_dump(), lessons=lessons)
+        modules_out.append(mod)
+
+    return CourseDetailOut(**CourseOut.model_validate(course).model_dump(), modules=modules_out)
 
 
 @router.post("/", response_model=CourseOut, status_code=status.HTTP_201_CREATED)
@@ -80,6 +108,38 @@ async def update_course(
     return CourseOut.model_validate(course)
 
 
+@router.post("/{course_id}/publish", response_model=CourseOut)
+async def publish_course(
+    course_id: int,
+    current_user: User = Depends(require_role(UserRole.manager)),
+    db: AsyncSession = Depends(get_db),
+):
+    result = await db.execute(select(Course).where(Course.id == course_id))
+    course = result.scalar_one_or_none()
+    if course is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Course not found")
+    course.is_published = True
+    await db.commit()
+    await db.refresh(course)
+    return CourseOut.model_validate(course)
+
+
+@router.post("/{course_id}/unpublish", response_model=CourseOut)
+async def unpublish_course(
+    course_id: int,
+    current_user: User = Depends(require_role(UserRole.manager)),
+    db: AsyncSession = Depends(get_db),
+):
+    result = await db.execute(select(Course).where(Course.id == course_id))
+    course = result.scalar_one_or_none()
+    if course is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Course not found")
+    course.is_published = False
+    await db.commit()
+    await db.refresh(course)
+    return CourseOut.model_validate(course)
+
+
 @router.delete("/{course_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_course(
     course_id: int,
@@ -108,14 +168,13 @@ async def list_modules(
     return [ModuleOut.model_validate(m) for m in result.scalars().all()]
 
 
-@router.post("/{course_id}/modules", response_model=ModuleOut, status_code=status.HTTP_201_CREATED)
+@router.post("/modules/", response_model=ModuleOut, status_code=status.HTTP_201_CREATED)
 async def create_module(
-    course_id: int,
     body: ModuleCreate,
     current_user: User = Depends(require_role(UserRole.manager)),
     db: AsyncSession = Depends(get_db),
 ):
-    module = Module(course_id=course_id, title=body.title, order_index=body.order_index)
+    module = Module(course_id=body.course_id, title=body.title, order_index=body.order_index)
     db.add(module)
     await db.commit()
     await db.refresh(module)

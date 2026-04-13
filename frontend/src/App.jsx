@@ -5,6 +5,8 @@ import CoursePage from './pages/CoursePage';
 import AdminDashboard from './pages/AdminDashboard';
 import Employees from './pages/admin/Employees';
 import Studios from './pages/admin/Studios';
+import Courses from './pages/admin/Courses';
+import CourseDetail from './pages/admin/CourseDetail';
 import Layout from './components/Layout';
 import ProtectedRoute from './components/ProtectedRoute';
 
@@ -46,6 +48,22 @@ export default function App() {
         element={
           <ProtectedRoute minimumRole="owner">
             <Studios />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/admin/courses"
+        element={
+          <ProtectedRoute minimumRole="manager">
+            <Courses />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/admin/courses/:id"
+        element={
+          <ProtectedRoute minimumRole="manager">
+            <CourseDetail />
           </ProtectedRoute>
         }
       />

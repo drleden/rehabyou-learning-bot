@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.config import settings
-from app.routers import auth, users, studios, courses, lessons, tests, assignments, permissions, export
+from app.routers import auth, users, studios, courses, lessons, tests, assignments, permissions, export, upload
 
 app = FastAPI(title="Rehab.You Learning API", version="1.0.0", redirect_slashes=False)
 
@@ -25,6 +25,7 @@ app.include_router(tests.router, prefix=PREFIX)
 app.include_router(assignments.router, prefix=PREFIX)
 app.include_router(permissions.router, prefix=PREFIX)
 app.include_router(export.router, prefix=PREFIX)
+app.include_router(upload.router, prefix=PREFIX)
 
 
 @app.on_event("startup")

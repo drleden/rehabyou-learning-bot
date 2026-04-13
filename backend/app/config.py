@@ -12,6 +12,12 @@ class Settings(BaseSettings):
         "https://app.rehabyou.site",
     ]
 
+    S3_ACCESS_KEY: str = ""
+    S3_SECRET_KEY: str = ""
+    S3_BUCKET: str = "rehabyou-storage"
+    S3_ENDPOINT: str = "https://storage.yandexcloud.net"
+    S3_REGION: str = "ru-central1"
+
     model_config = {"env_file": ".env", "extra": "ignore"}
 
 

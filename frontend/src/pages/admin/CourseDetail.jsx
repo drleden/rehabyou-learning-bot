@@ -90,14 +90,14 @@ export default function CourseDetail() {
     <div className="bg-white min-h-screen pb-8">
       {/* Cover */}
       <div className="relative">
-        <div className="aspect-video bg-gradient-to-br from-accent/20 to-orange-50 flex items-center justify-center">
+        <div
+          className="h-[200px] flex items-center justify-center"
+          style={{ background: course.cover_url ? undefined : 'linear-gradient(135deg, #e8571a 0%, #f7a24b 100%)' }}
+        >
           {course.cover_url ? (
             <img src={course.cover_url} alt="" className="w-full h-full object-cover" />
           ) : (
-            <svg className="w-16 h-16 text-accent/30" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-              <path strokeLinecap="round" strokeLinejoin="round" d="M15.91 11.672a.375.375 0 010 .656l-5.603 3.113a.375.375 0 01-.557-.328V8.887c0-.286.307-.466.557-.327l5.603 3.112z" />
-            </svg>
+            <span className="text-4xl opacity-40">📚</span>
           )}
         </div>
         <button onClick={() => navigate('/admin/courses')} className="absolute top-4 left-4 w-10 h-10 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center shadow-sm">

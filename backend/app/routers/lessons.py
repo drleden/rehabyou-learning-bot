@@ -73,7 +73,13 @@ async def get_lesson(
     lesson = result.scalar_one_or_none()
     if lesson is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Lesson not found")
-    return LessonOut.model_validate(lesson)
+    out = LessonOut.model_validate(lesson)
+    module_result = await db.execute(select(Module).where(Module.id == lesson.module_id))
+    module = module_result.scalar_one_or_none()
+    if module:
+        out.course_id = module.course_id
+        out.module_title = module.title
+    return out
 
 
 @router.post("/", response_model=LessonOut, status_code=status.HTTP_201_CREATED)

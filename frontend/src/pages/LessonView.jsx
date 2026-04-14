@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import Markdown from 'react-markdown';
 import client from '../api/client';
-import { updateLessonProgress } from '../api/courses';
+import { getCourse, updateLessonProgress } from '../api/courses';
 
 export default function LessonView() {
   const { id } = useParams();
@@ -11,32 +11,41 @@ export default function LessonView() {
   const [loading, setLoading] = useState(true);
   const [completing, setCompleting] = useState(false);
   const [completed, setCompleted] = useState(false);
+  const [nextLessonId, setNextLessonId] = useState(null);
   const [courseId, setCourseId] = useState(null);
+  const [isLastLesson, setIsLastLesson] = useState(false);
 
   useEffect(() => {
     (async () => {
       setLoading(true);
+      setCompleted(false);
+      setNextLessonId(null);
+      setIsLastLesson(false);
       try {
-        const { data } = await client.get(`/lessons/${id}`);
-        setLesson(data);
+        const { data: lessonData } = await client.get(`/lessons/${id}`);
+        setLesson(lessonData);
+        const cId = lessonData.course_id;
+        setCourseId(cId);
 
-        // Get progress
+        // Check progress
         try {
           const { data: prog } = await client.get(`/lessons/${id}/progress`);
           if (prog && prog.status === 'completed') setCompleted(true);
-        } catch { /* no progress yet */ }
+        } catch { /* no progress */ }
 
-        // Find course id by going module → course
-        try {
-          const { data: courses } = await client.get('/courses/');
-          for (const c of courses) {
-            const { data: detail } = await client.get(`/courses/${c.id}`);
-            const found = (detail.modules || []).some((m) =>
-              (m.lessons || []).some((l) => l.id === parseInt(id))
-            );
-            if (found) { setCourseId(c.id); break; }
-          }
-        } catch { /* ok */ }
+        // Find next lesson
+        if (cId) {
+          try {
+            const courseData = await getCourse(cId);
+            const allLessons = (courseData.modules || []).flatMap((m) => m.lessons || []);
+            const currentIdx = allLessons.findIndex((l) => l.id === parseInt(id));
+            if (currentIdx >= 0 && currentIdx < allLessons.length - 1) {
+              setNextLessonId(allLessons[currentIdx + 1].id);
+            } else {
+              setIsLastLesson(true);
+            }
+          } catch { /* ok */ }
+        }
       } catch { navigate('/'); }
       setLoading(false);
     })();
@@ -73,6 +82,9 @@ export default function LessonView() {
           </button>
           <div className="flex-1 min-w-0">
             <h1 className="font-bold text-sm text-gray-900 truncate">{lesson.title}</h1>
+            {lesson.module_title && (
+              <p className="text-xs text-gray-400 truncate">{lesson.module_title}</p>
+            )}
           </div>
         </div>
       </header>
@@ -102,12 +114,31 @@ export default function LessonView() {
 
       <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 p-4">
         {completed ? (
-          <div className="flex items-center justify-center gap-2 h-12 bg-green-50 rounded-xl">
-            <svg className="w-5 h-5 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-            </svg>
-            <span className="text-sm font-semibold text-green-700">Урок пройден</span>
-          </div>
+          nextLessonId ? (
+            <button
+              onClick={() => navigate(`/lesson/${nextLessonId}`)}
+              className="w-full h-12 bg-accent hover:bg-accent-hover text-white font-semibold rounded-xl transition-colors active:scale-[0.98] flex items-center justify-center gap-2"
+            >
+              Следующий урок
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+              </svg>
+            </button>
+          ) : isLastLesson ? (
+            <button
+              onClick={() => navigate(courseId ? `/course/${courseId}` : '/')}
+              className="w-full h-12 bg-green-500 hover:bg-green-600 text-white font-semibold rounded-xl transition-colors active:scale-[0.98] flex items-center justify-center gap-2"
+            >
+              Курс завершён 🎉
+            </button>
+          ) : (
+            <div className="flex items-center justify-center gap-2 h-12 bg-green-50 rounded-xl">
+              <svg className="w-5 h-5 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+              </svg>
+              <span className="text-sm font-semibold text-green-700">Урок пройден</span>
+            </div>
+          )
         ) : (
           <button
             onClick={handleComplete}

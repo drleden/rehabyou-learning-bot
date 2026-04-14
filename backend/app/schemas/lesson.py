@@ -14,6 +14,8 @@ class LessonOut(BaseModel):
     order_index: int
     is_published: bool
     created_at: datetime
+    course_id: int | None = None
+    module_title: str | None = None
 
     model_config = {"from_attributes": True}
 

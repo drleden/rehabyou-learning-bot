@@ -22,6 +22,7 @@ export default function LessonView() {
     (async () => {
       setLoading(true);
       setCompleted(false);
+      setHasTest(false);
       setPrevLessonId(null);
       setNextLessonId(null);
       setIsLastLesson(false);
@@ -40,7 +41,7 @@ export default function LessonView() {
         // Check if lesson has a test
         try {
           const testData = await getTestByLesson(id);
-          setHasTest(!!testData);
+          setHasTest(testData != null && testData.id != null);
         } catch { setHasTest(false); }
 
         // Find next lesson

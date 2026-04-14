@@ -1,7 +1,7 @@
 import client from './client';
 
 export async function getTestByLesson(lessonId) {
-  const { data } = await client.get(`/tests/by-lesson/${lessonId}`);
+  const { data } = await client.get(`/tests/by-lesson/${lessonId}/full`);
   return data;
 }
 

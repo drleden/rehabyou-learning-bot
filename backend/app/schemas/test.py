@@ -65,3 +65,36 @@ class TestAttemptOut(BaseModel):
 
 class TestSubmit(BaseModel):
     answers: dict  # {question_id: answer_id}
+
+
+class TestAnswerInQuestion(BaseModel):
+    id: int
+    answer_text: str
+    is_correct: bool = False
+
+    model_config = {"from_attributes": True}
+
+
+class TestQuestionFull(TestQuestionOut):
+    answers: list[TestAnswerInQuestion] = []
+
+
+class TestFull(TestOut):
+    questions: list[TestQuestionFull] = []
+
+
+class AnswerInput(BaseModel):
+    answer_text: str
+    is_correct: bool = False
+
+
+class QuestionInput(BaseModel):
+    question_text: str
+    order_index: int = 0
+    answers: list[AnswerInput] = []
+
+
+class TestFullCreate(BaseModel):
+    lesson_id: int
+    pass_threshold: int = 95
+    questions: list[QuestionInput] = []

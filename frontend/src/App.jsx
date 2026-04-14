@@ -3,6 +3,7 @@ import Login from './pages/Login';
 import Catalog from './pages/Catalog';
 import CourseView from './pages/CourseView';
 import LessonView from './pages/LessonView';
+import TestView from './pages/TestView';
 import AdminDashboard from './pages/AdminDashboard';
 import Employees from './pages/admin/Employees';
 import Studios from './pages/admin/Studios';
@@ -33,6 +34,14 @@ export default function App() {
         element={
           <ProtectedRoute>
             <LessonView />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/test/:lessonId"
+        element={
+          <ProtectedRoute>
+            <TestView />
           </ProtectedRoute>
         }
       />

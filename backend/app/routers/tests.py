@@ -9,16 +9,63 @@ from app.models.user import User, UserRole
 from app.schemas.test import (
     TestAnswerCreate,
     TestAnswerOut,
+    TestAnswerInQuestion,
     TestAttemptOut,
     TestCreate,
+    TestFull,
+    TestFullCreate,
     TestOut,
     TestQuestionCreate,
+    TestQuestionFull,
     TestQuestionOut,
     TestSubmit,
     TestUpdate,
 )
 
 router = APIRouter(prefix="/tests", tags=["tests"])
+
+
+@router.get("/by-lesson/{lesson_id}/full", response_model=TestFull | None)
+async def get_test_full_by_lesson(
+    lesson_id: int,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    result = await db.execute(select(Test).where(Test.lesson_id == lesson_id))
+    test = result.scalar_one_or_none()
+    if test is None:
+        return None
+    q_res = await db.execute(
+        select(TestQuestion).where(TestQuestion.test_id == test.id).order_by(TestQuestion.order_index)
+    )
+    questions = q_res.scalars().all()
+    q_out = []
+    for q in questions:
+        a_res = await db.execute(select(TestAnswer).where(TestAnswer.question_id == q.id))
+        answers = [TestAnswerInQuestion.model_validate(a) for a in a_res.scalars().all()]
+        q_out.append(TestQuestionFull(**TestQuestionOut.model_validate(q).model_dump(), answers=answers))
+    return TestFull(**TestOut.model_validate(test).model_dump(), questions=q_out)
+
+
+@router.post("/full", response_model=TestOut, status_code=status.HTTP_201_CREATED)
+async def create_test_full(
+    body: TestFullCreate,
+    current_user: User = Depends(require_role(UserRole.manager)),
+    db: AsyncSession = Depends(get_db),
+):
+    test = Test(lesson_id=body.lesson_id, pass_threshold=body.pass_threshold)
+    db.add(test)
+    await db.flush()
+    for q_data in body.questions:
+        q = TestQuestion(test_id=test.id, question_text=q_data.question_text, order_index=q_data.order_index)
+        db.add(q)
+        await db.flush()
+        for a_data in q_data.answers:
+            a = TestAnswer(question_id=q.id, answer_text=a_data.answer_text, is_correct=a_data.is_correct)
+            db.add(a)
+    await db.commit()
+    await db.refresh(test)
+    return TestOut.model_validate(test)
 
 
 @router.get("/by-lesson/{lesson_id}", response_model=TestOut | None)

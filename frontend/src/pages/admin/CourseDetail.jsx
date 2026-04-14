@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { getRoleLabel } from '../../utils/roles';
+import { getTestByLesson, createTestFull } from '../../api/tests';
 import {
   getCourse,
   publishCourse,
@@ -21,6 +22,8 @@ export default function CourseDetail() {
   const [openModules, setOpenModules] = useState({});
   const [showAddModule, setShowAddModule] = useState(false);
   const [addLessonModuleId, setAddLessonModuleId] = useState(null);
+  const [testLessonId, setTestLessonId] = useState(null);
+  const [testsMap, setTestsMap] = useState({});
 
   const fetchCourse = async () => {
     setLoading(true);
@@ -31,6 +34,16 @@ export default function CourseDetail() {
       const open = {};
       (data.modules || []).forEach((m) => { open[m.id] = true; });
       setOpenModules(open);
+      // Load test info for each lesson
+      const tMap = {};
+      const allLessons = (data.modules || []).flatMap((m) => m.lessons || []);
+      await Promise.all(allLessons.map(async (l) => {
+        try {
+          const t = await getTestByLesson(l.id);
+          if (t) tMap[l.id] = t;
+        } catch { /* no test */ }
+      }));
+      setTestsMap(tMap);
     } catch (err) {
       setError(err.response?.data?.detail || 'Не удалось загрузить курс');
     }
@@ -193,6 +206,16 @@ export default function CourseDetail() {
                         </div>
                         <span className="flex-1 text-sm text-gray-900 truncate">{lesson.title}</span>
                         <button
+                          onClick={() => setTestLessonId(lesson.id)}
+                          className={`text-xs font-medium px-2 py-0.5 rounded-full transition-colors ${
+                            testsMap[lesson.id]
+                              ? 'bg-green-50 text-green-600'
+                              : 'bg-gray-100 text-gray-400 hover:text-accent hover:bg-accent/10'
+                          }`}
+                        >
+                          {testsMap[lesson.id] ? '📝 Тест' : '+ Тест'}
+                        </button>
+                        <button
                           onClick={() => handleDeleteLesson(lesson.id)}
                           className="text-gray-300 hover:text-red-500 transition-colors p-1"
                         >
@@ -244,6 +267,15 @@ export default function CourseDetail() {
           nextOrder={modules.find((m) => m.id === addLessonModuleId)?.lessons?.length || 0}
           onClose={() => setAddLessonModuleId(null)}
           onCreated={() => { setAddLessonModuleId(null); fetchCourse(); }}
+        />
+      )}
+
+      {testLessonId && (
+        <TestEditorSheet
+          lessonId={testLessonId}
+          existingTest={testsMap[testLessonId] || null}
+          onClose={() => setTestLessonId(null)}
+          onSaved={() => { setTestLessonId(null); fetchCourse(); }}
         />
       )}
     </div>
@@ -385,6 +417,124 @@ function AddLessonSheet({ moduleId, nextOrder, onClose, onCreated }) {
             {loading ? 'Создание...' : 'Создать урок'}
           </button>
         </form>
+      </div>
+    </div>
+  );
+}
+
+function TestEditorSheet({ lessonId, existingTest, onClose, onSaved }) {
+  const [threshold, setThreshold] = useState(existingTest?.pass_threshold || 95);
+  const [questions, setQuestions] = useState([
+    { text: '', answers: [{ text: '', correct: false }, { text: '', correct: false }, { text: '', correct: false }, { text: '', correct: true }] },
+  ]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+
+  const addQuestion = () => {
+    setQuestions((prev) => [...prev, {
+      text: '', answers: [{ text: '', correct: false }, { text: '', correct: false }, { text: '', correct: false }, { text: '', correct: true }],
+    }]);
+  };
+
+  const updateQuestionText = (qi, text) => {
+    setQuestions((prev) => prev.map((q, i) => i === qi ? { ...q, text } : q));
+  };
+
+  const updateAnswerText = (qi, ai, text) => {
+    setQuestions((prev) => prev.map((q, i) => i === qi ? {
+      ...q, answers: q.answers.map((a, j) => j === ai ? { ...a, text } : a),
+    } : q));
+  };
+
+  const setCorrectAnswer = (qi, ai) => {
+    setQuestions((prev) => prev.map((q, i) => i === qi ? {
+      ...q, answers: q.answers.map((a, j) => ({ ...a, correct: j === ai })),
+    } : q));
+  };
+
+  const removeQuestion = (qi) => {
+    setQuestions((prev) => prev.filter((_, i) => i !== qi));
+  };
+
+  const handleSave = async () => {
+    if (existingTest) { onSaved(); return; }
+    const valid = questions.every((q) => q.text.trim() && q.answers.some((a) => a.text.trim() && a.correct));
+    if (!valid) { setError('Заполните все вопросы и отметьте правильный ответ'); return; }
+    setLoading(true);
+    setError('');
+    try {
+      await createTestFull({
+        lesson_id: lessonId,
+        pass_threshold: threshold,
+        questions: questions.map((q, qi) => ({
+          question_text: q.text.trim(),
+          order_index: qi,
+          answers: q.answers.filter((a) => a.text.trim()).map((a) => ({
+            answer_text: a.text.trim(),
+            is_correct: a.correct,
+          })),
+        })),
+      });
+      onSaved();
+    } catch (err) {
+      setError(err.response?.data?.detail || 'Ошибка сохранения');
+    }
+    setLoading(false);
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-end justify-center" onClick={onClose}>
+      <div className="absolute inset-0 bg-black/30" />
+      <div className="relative w-full max-w-lg bg-white rounded-t-3xl max-h-[90vh] flex flex-col" onClick={(e) => e.stopPropagation()}>
+        <div className="flex-shrink-0 pt-3 pb-2">
+          <div className="w-10 h-1 bg-gray-300 rounded-full mx-auto" />
+        </div>
+        <div className="flex-shrink-0 px-5 pb-3 border-b border-gray-100">
+          <h3 className="font-bold text-lg text-gray-900">
+            {existingTest ? 'Тест создан' : 'Создать тест'}
+          </h3>
+        </div>
+        <div className="flex-1 overflow-y-auto px-5 py-3 space-y-4">
+          {existingTest ? (
+            <div className="text-center py-6">
+              <span className="text-3xl">📝</span>
+              <p className="text-sm text-gray-600 mt-2">Порог: {existingTest.pass_threshold}%</p>
+            </div>
+          ) : (
+            <>
+              <div>
+                <label className="text-xs font-medium text-gray-600">Порог прохождения (%)</label>
+                <input type="number" min={1} max={100} value={threshold} onChange={(e) => setThreshold(Number(e.target.value))} className="w-full h-10 px-3 mt-1 rounded-xl border border-gray-200 bg-surface text-sm focus:outline-none focus:ring-2 focus:ring-accent/30" />
+              </div>
+              {questions.map((q, qi) => (
+                <div key={qi} className="bg-surface rounded-xl p-3 space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-semibold text-gray-500">Вопрос {qi + 1}</span>
+                    {questions.length > 1 && (
+                      <button onClick={() => removeQuestion(qi)} className="text-xs text-red-400 hover:text-red-600">Удалить</button>
+                    )}
+                  </div>
+                  <input type="text" value={q.text} onChange={(e) => updateQuestionText(qi, e.target.value)} placeholder="Текст вопроса" className="w-full h-10 px-3 rounded-lg border border-gray-200 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-accent/30" />
+                  <div className="space-y-1">
+                    {q.answers.map((a, ai) => (
+                      <div key={ai} className="flex items-center gap-2">
+                        <button type="button" onClick={() => setCorrectAnswer(qi, ai)} className={`flex-shrink-0 w-5 h-5 rounded-full border-2 flex items-center justify-center transition-colors ${a.correct ? 'border-green-500 bg-green-500' : 'border-gray-300'}`}>
+                          {a.correct && <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>}
+                        </button>
+                        <input type="text" value={a.text} onChange={(e) => updateAnswerText(qi, ai, e.target.value)} placeholder={`Вариант ${ai + 1}`} className="flex-1 h-9 px-3 rounded-lg border border-gray-200 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-accent/30" />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ))}
+              <button type="button" onClick={addQuestion} className="w-full p-2 rounded-xl border border-dashed border-gray-300 text-xs text-gray-400 hover:border-accent hover:text-accent transition-colors">+ Добавить вопрос</button>
+            </>
+          )}
+          {error && <p className="text-sm text-red-500">{error}</p>}
+          <button onClick={handleSave} disabled={loading} className="w-full h-11 bg-accent hover:bg-accent-hover disabled:opacity-60 text-white font-semibold rounded-xl text-sm mb-2">
+            {existingTest ? 'Закрыть' : loading ? 'Сохранение...' : 'Сохранить тест'}
+          </button>
+        </div>
       </div>
     </div>
   );

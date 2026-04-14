@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import Markdown from 'react-markdown';
 import client from '../api/client';
 import { getCourse, updateLessonProgress } from '../api/courses';
+import { getTestByLesson } from '../api/tests';
 
 export default function LessonView() {
   const { id } = useParams();
@@ -15,6 +16,7 @@ export default function LessonView() {
   const [nextLessonId, setNextLessonId] = useState(null);
   const [courseId, setCourseId] = useState(null);
   const [isLastLesson, setIsLastLesson] = useState(false);
+  const [hasTest, setHasTest] = useState(false);
 
   useEffect(() => {
     (async () => {
@@ -34,6 +36,12 @@ export default function LessonView() {
           const { data: prog } = await client.get(`/lessons/${id}/progress`);
           if (prog && prog.status === 'completed') setCompleted(true);
         } catch { /* no progress */ }
+
+        // Check if lesson has a test
+        try {
+          const testData = await getTestByLesson(id);
+          setHasTest(!!testData);
+        } catch { setHasTest(false); }
 
         // Find next lesson
         if (cId) {
@@ -170,17 +178,29 @@ export default function LessonView() {
                 <span className="text-sm">Назад</span>
               </button>
             )}
-            <button
-              onClick={handleComplete}
-              disabled={completing}
-              className="flex-1 h-12 bg-accent hover:bg-accent-hover disabled:opacity-60 text-white font-semibold rounded-xl transition-colors active:scale-[0.98] flex items-center justify-center"
-            >
-              {completing ? (
-                <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-              ) : (
-                'Отметить как пройденный'
-              )}
-            </button>
+            {hasTest ? (
+              <button
+                onClick={() => navigate(`/test/${id}`)}
+                className="flex-1 h-12 bg-accent hover:bg-accent-hover text-white font-semibold rounded-xl transition-colors active:scale-[0.98] flex items-center justify-center gap-2"
+              >
+                Пройти тест
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                </svg>
+              </button>
+            ) : (
+              <button
+                onClick={handleComplete}
+                disabled={completing}
+                className="flex-1 h-12 bg-accent hover:bg-accent-hover disabled:opacity-60 text-white font-semibold rounded-xl transition-colors active:scale-[0.98] flex items-center justify-center"
+              >
+                {completing ? (
+                  <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                ) : (
+                  'Отметить как пройденный'
+                )}
+              </button>
+            )}
           </div>
         )}
       </div>

@@ -1,16 +1,13 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getUsers, createUser, updateUser, deleteUser } from '../../api/users';
+import { ROLE_LABELS, getRoleLabel, getRoleColor } from '../../utils/roles';
 
-const ROLES = [
-  { value: 'novice', label: 'Новичок', color: 'bg-gray-100 text-gray-600' },
-  { value: 'master', label: 'Мастер', color: 'bg-blue-50 text-blue-600' },
-  { value: 'senior_master', label: 'Старший мастер', color: 'bg-indigo-50 text-indigo-600' },
-  { value: 'teacher', label: 'Преподаватель', color: 'bg-purple-50 text-purple-600' },
-  { value: 'manager', label: 'Менеджер', color: 'bg-accent/10 text-accent' },
-  { value: 'owner', label: 'Владелец', color: 'bg-amber-50 text-amber-700' },
-  { value: 'superadmin', label: 'Суперадмин', color: 'bg-red-50 text-red-600' },
-];
+const ROLES = Object.entries(ROLE_LABELS).map(([value, label]) => ({
+  value,
+  label,
+  color: getRoleColor(value),
+}));
 
 const ROLE_FILTERS = [
   { value: null, label: 'Все' },

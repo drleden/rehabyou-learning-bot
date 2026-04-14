@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { getRoleLabel } from '../../utils/roles';
 import {
   getCourse,
   publishCourse,
@@ -121,7 +122,7 @@ export default function CourseDetail() {
         {course.target_roles && course.target_roles.length > 0 && (
           <div className="flex flex-wrap gap-1 mt-2">
             {course.target_roles.map((r) => (
-              <span key={r} className="text-[10px] text-accent bg-accent/10 px-1.5 py-0.5 rounded-full font-medium">{r}</span>
+              <span key={r} className="text-[10px] text-accent bg-accent/10 px-1.5 py-0.5 rounded-full font-medium">{getRoleLabel(r)}</span>
             ))}
           </div>
         )}

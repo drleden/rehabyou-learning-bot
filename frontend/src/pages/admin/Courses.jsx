@@ -2,14 +2,11 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getCourses, createCourse, deleteCourse, importCourse } from '../../api/courses';
 import { getPresignedUrl, uploadToS3 } from '../../api/upload';
+import { ROLE_LABELS, getRoleLabel } from '../../utils/roles';
 
-const ROLE_OPTIONS = [
-  { value: 'novice', label: 'Новичок' },
-  { value: 'master', label: 'Мастер' },
-  { value: 'senior_master', label: 'Старший мастер' },
-  { value: 'teacher', label: 'Преподаватель' },
-  { value: 'manager', label: 'Менеджер' },
-];
+const ROLE_OPTIONS = Object.entries(ROLE_LABELS)
+  .filter(([k]) => k !== 'owner' && k !== 'superadmin')
+  .map(([value, label]) => ({ value, label }));
 
 const FILTERS = [
   { value: null, label: 'Все' },
@@ -127,7 +124,7 @@ export default function Courses() {
                       <div className="flex flex-wrap gap-0.5 mt-1">
                         {course.target_roles.slice(0, 2).map((r) => (
                           <span key={r} className="text-[9px] text-accent bg-accent/10 px-1 py-0.5 rounded-full font-medium">
-                            {ROLE_OPTIONS.find((o) => o.value === r)?.label || r}
+                            {getRoleLabel(r)}
                           </span>
                         ))}
                         {course.target_roles.length > 2 && (

@@ -4,6 +4,7 @@ import Catalog from './pages/Catalog';
 import CourseView from './pages/CourseView';
 import LessonView from './pages/LessonView';
 import TestView from './pages/TestView';
+import Profile from './pages/Profile';
 import AdminDashboard from './pages/AdminDashboard';
 import Employees from './pages/admin/Employees';
 import Studios from './pages/admin/Studios';
@@ -27,7 +28,7 @@ export default function App() {
         <Route path="/course/:id" element={<CourseView />} />
         <Route path="/academy" element={<PlaceholderPage title="Академия" />} />
         <Route path="/calendar" element={<PlaceholderPage title="Календарь" />} />
-        <Route path="/profile" element={<PlaceholderPage title="Профиль" />} />
+        <Route path="/profile" element={<Profile />} />
       </Route>
       <Route
         path="/lesson/:id"

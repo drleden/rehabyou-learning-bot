@@ -11,6 +11,7 @@ export default function LessonView() {
   const [loading, setLoading] = useState(true);
   const [completing, setCompleting] = useState(false);
   const [completed, setCompleted] = useState(false);
+  const [prevLessonId, setPrevLessonId] = useState(null);
   const [nextLessonId, setNextLessonId] = useState(null);
   const [courseId, setCourseId] = useState(null);
   const [isLastLesson, setIsLastLesson] = useState(false);
@@ -19,6 +20,7 @@ export default function LessonView() {
     (async () => {
       setLoading(true);
       setCompleted(false);
+      setPrevLessonId(null);
       setNextLessonId(null);
       setIsLastLesson(false);
       try {
@@ -39,6 +41,9 @@ export default function LessonView() {
             const courseData = await getCourse(cId);
             const allLessons = (courseData.modules || []).flatMap((m) => m.lessons || []);
             const currentIdx = allLessons.findIndex((l) => l.id === parseInt(id));
+            if (currentIdx > 0) {
+              setPrevLessonId(allLessons[currentIdx - 1].id);
+            }
             if (currentIdx >= 0 && currentIdx < allLessons.length - 1) {
               setNextLessonId(allLessons[currentIdx + 1].id);
             } else {
@@ -114,43 +119,69 @@ export default function LessonView() {
 
       <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 p-4">
         {completed ? (
-          nextLessonId ? (
-            <button
-              onClick={() => navigate(`/lesson/${nextLessonId}`)}
-              className="w-full h-12 bg-accent hover:bg-accent-hover text-white font-semibold rounded-xl transition-colors active:scale-[0.98] flex items-center justify-center gap-2"
-            >
-              Следующий урок
-              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-              </svg>
-            </button>
-          ) : isLastLesson ? (
-            <button
-              onClick={() => navigate(courseId ? `/course/${courseId}` : '/')}
-              className="w-full h-12 bg-green-500 hover:bg-green-600 text-white font-semibold rounded-xl transition-colors active:scale-[0.98] flex items-center justify-center gap-2"
-            >
-              Курс завершён 🎉
-            </button>
-          ) : (
-            <div className="flex items-center justify-center gap-2 h-12 bg-green-50 rounded-xl">
-              <svg className="w-5 h-5 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-              </svg>
-              <span className="text-sm font-semibold text-green-700">Урок пройден</span>
-            </div>
-          )
-        ) : (
-          <button
-            onClick={handleComplete}
-            disabled={completing}
-            className="w-full h-12 bg-accent hover:bg-accent-hover disabled:opacity-60 text-white font-semibold rounded-xl transition-colors active:scale-[0.98] flex items-center justify-center"
-          >
-            {completing ? (
-              <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-            ) : (
-              'Отметить как пройденный'
+          <div className="flex gap-2">
+            {prevLessonId && (
+              <button
+                onClick={() => navigate(`/lesson/${prevLessonId}`)}
+                className="h-12 px-4 border border-gray-200 text-gray-700 font-semibold rounded-xl transition-colors active:scale-[0.98] flex items-center justify-center gap-1 hover:bg-surface"
+              >
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+                </svg>
+                <span className="text-sm">Назад</span>
+              </button>
             )}
-          </button>
+            {nextLessonId ? (
+              <button
+                onClick={() => navigate(`/lesson/${nextLessonId}`)}
+                className="flex-1 h-12 bg-accent hover:bg-accent-hover text-white font-semibold rounded-xl transition-colors active:scale-[0.98] flex items-center justify-center gap-2"
+              >
+                Следующий урок
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                </svg>
+              </button>
+            ) : isLastLesson ? (
+              <button
+                onClick={() => navigate(courseId ? `/course/${courseId}` : '/')}
+                className="flex-1 h-12 bg-green-500 hover:bg-green-600 text-white font-semibold rounded-xl transition-colors active:scale-[0.98] flex items-center justify-center gap-2"
+              >
+                Курс завершён 🎉
+              </button>
+            ) : (
+              <div className="flex-1 flex items-center justify-center gap-2 h-12 bg-green-50 rounded-xl">
+                <svg className="w-5 h-5 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                </svg>
+                <span className="text-sm font-semibold text-green-700">Урок пройден</span>
+              </div>
+            )}
+          </div>
+        ) : (
+          <div className="flex gap-2">
+            {prevLessonId && (
+              <button
+                onClick={() => navigate(`/lesson/${prevLessonId}`)}
+                className="h-12 px-4 border border-gray-200 text-gray-700 font-semibold rounded-xl transition-colors active:scale-[0.98] flex items-center justify-center gap-1 hover:bg-surface"
+              >
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+                </svg>
+                <span className="text-sm">Назад</span>
+              </button>
+            )}
+            <button
+              onClick={handleComplete}
+              disabled={completing}
+              className="flex-1 h-12 bg-accent hover:bg-accent-hover disabled:opacity-60 text-white font-semibold rounded-xl transition-colors active:scale-[0.98] flex items-center justify-center"
+            >
+              {completing ? (
+                <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+              ) : (
+                'Отметить как пройденный'
+              )}
+            </button>
+          </div>
         )}
       </div>
     </div>

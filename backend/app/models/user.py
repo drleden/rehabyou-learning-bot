@@ -28,10 +28,15 @@ class User(Base):
     phone: Mapped[str | None] = mapped_column(String(20), unique=True, nullable=True)
     telegram_id: Mapped[int | None] = mapped_column(Integer, unique=True, nullable=True)
     telegram_username: Mapped[str | None] = mapped_column(String(100), nullable=True)
-    full_name: Mapped[str] = mapped_column(String(255))
+    first_name: Mapped[str] = mapped_column(String(127), default="")
+    last_name: Mapped[str] = mapped_column(String(127), default="")
     avatar_url: Mapped[str | None] = mapped_column(String(500), nullable=True)
     role: Mapped[UserRole] = mapped_column(Enum(UserRole), default=UserRole.novice)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
     is_blocked: Mapped[bool] = mapped_column(Boolean, default=False)
     password_hash: Mapped[str | None] = mapped_column(String(255), nullable=True)
     last_seen_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+
+    @property
+    def full_name(self) -> str:
+        return f"{self.first_name} {self.last_name}".strip()

@@ -67,11 +67,18 @@ async def create_user(
     current_user: User = Depends(require_role(UserRole.manager)),
     db: AsyncSession = Depends(get_db),
 ):
+    first_name = body.first_name
+    last_name = body.last_name
+    if not first_name and not last_name and body.full_name:
+        parts = body.full_name.strip().split(None, 1)
+        first_name = parts[0] if parts else ""
+        last_name = parts[1] if len(parts) > 1 else ""
     user = User(
         phone=body.phone,
         telegram_id=body.telegram_id,
         telegram_username=body.telegram_username,
-        full_name=body.full_name,
+        first_name=first_name,
+        last_name=last_name,
         role=body.role,
         password_hash=hash_password(body.password) if body.password else None,
     )

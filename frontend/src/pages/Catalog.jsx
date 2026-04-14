@@ -47,7 +47,7 @@ export default function Catalog() {
           <div>
             <h1 className="text-xl font-extrabold text-gray-900">Каталог</h1>
             <p className="text-sm text-gray-500 mt-0.5">
-              {user ? `Привет, ${user.full_name.split(' ')[0]}!` : 'Добро пожаловать!'}
+              {user ? `Привет, ${user.first_name || user.full_name?.split(' ')[0]}!` : 'Добро пожаловать!'}
             </p>
           </div>
           <button

@@ -24,7 +24,9 @@ export default function Profile() {
         <div className="w-20 h-20 rounded-full bg-accent flex items-center justify-center shadow-lg shadow-accent/20">
           <span className="text-white font-extrabold text-2xl">{getInitials(user.full_name)}</span>
         </div>
-        <h1 className="text-xl font-extrabold text-gray-900 mt-4">{user.full_name}</h1>
+        <h1 className="text-xl font-extrabold text-gray-900 mt-4">
+          {user.first_name} {user.last_name}
+        </h1>
         <span className="text-sm text-accent font-medium mt-1">{getRoleLabel(user.role)}</span>
       </div>
 

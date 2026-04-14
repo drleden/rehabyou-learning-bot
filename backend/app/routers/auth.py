@@ -13,6 +13,11 @@ from app.utils.auth import create_access_token, hash_password, verify_password
 router = APIRouter(prefix="/auth", tags=["auth"])
 
 
+def _split_name(full_name: str) -> tuple[str, str]:
+    parts = full_name.strip().split(None, 1)
+    return (parts[0] if parts else "", parts[1] if len(parts) > 1 else "")
+
+
 class PhoneLoginRequest(BaseModel):
     phone: str
     password: str
@@ -21,18 +26,24 @@ class PhoneLoginRequest(BaseModel):
 class PhoneRegisterRequest(BaseModel):
     phone: str
     password: str
-    full_name: str
+    first_name: str = ""
+    last_name: str = ""
+    full_name: str | None = None  # backward compat
 
 
 class TelegramAuthRequest(BaseModel):
     telegram_id: int
     telegram_username: str | None = None
-    full_name: str
+    first_name: str = ""
+    last_name: str = ""
+    full_name: str | None = None
 
 
 class InitRequest(BaseModel):
     password: str
-    full_name: str = "Суперадмин"
+    first_name: str = ""
+    last_name: str = ""
+    full_name: str | None = None
 
 
 class TokenResponse(BaseModel):
@@ -66,9 +77,14 @@ async def phone_register(body: PhoneRegisterRequest, db: AsyncSession = Depends(
     if existing.scalar_one_or_none():
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Phone already registered")
 
+    fn, ln = body.first_name, body.last_name
+    if not fn and not ln and body.full_name:
+        fn, ln = _split_name(body.full_name)
+
     user = User(
         phone=body.phone,
-        full_name=body.full_name,
+        first_name=fn,
+        last_name=ln,
         password_hash=hash_password(body.password),
         role=UserRole.novice,
         last_seen_at=datetime.now(timezone.utc),
@@ -85,11 +101,16 @@ async def telegram_auth(body: TelegramAuthRequest, db: AsyncSession = Depends(ge
     result = await db.execute(select(User).where(User.telegram_id == body.telegram_id))
     user = result.scalar_one_or_none()
 
+    fn, ln = body.first_name, body.last_name
+    if not fn and not ln and body.full_name:
+        fn, ln = _split_name(body.full_name)
+
     if user is None:
         user = User(
             telegram_id=body.telegram_id,
             telegram_username=body.telegram_username,
-            full_name=body.full_name,
+            first_name=fn,
+            last_name=ln,
             role=UserRole.novice,
             last_seen_at=datetime.now(timezone.utc),
         )
@@ -116,9 +137,17 @@ async def init_superadmin(body: InitRequest, db: AsyncSession = Depends(get_db))
             detail="Init is only available when users table is empty",
         )
 
+    fn, ln = body.first_name, body.last_name
+    if not fn and not ln:
+        if body.full_name:
+            fn, ln = _split_name(body.full_name)
+        else:
+            fn = "Суперадмин"
+
     user = User(
         phone="+79852977062",
-        full_name=body.full_name,
+        first_name=fn,
+        last_name=ln,
         password_hash=hash_password(body.password),
         role=UserRole.superadmin,
         last_seen_at=datetime.now(timezone.utc),

@@ -310,7 +310,8 @@ function phoneToRaw(formatted) {
 }
 
 function AddEmployeeSheet({ onClose, onCreated }) {
-  const [name, setName] = useState('');
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
   const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -327,12 +328,13 @@ function AddEmployeeSheet({ onClose, onCreated }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!name.trim() || !phone.trim() || !password) return;
+    if (!firstName.trim() || !phone.trim() || !password) return;
     setLoading(true);
     setError('');
     try {
       await createUser({
-        full_name: name.trim(),
+        first_name: firstName.trim(),
+        last_name: lastName.trim(),
         phone: phoneToRaw(phone),
         password,
         role,
@@ -356,10 +358,18 @@ function AddEmployeeSheet({ onClose, onCreated }) {
         <form onSubmit={handleSubmit} className="space-y-3">
           <input
             type="text"
-            value={name}
-            onChange={(e) => setName(capitalizeWords(e.target.value))}
+            value={firstName}
+            onChange={(e) => setFirstName(capitalizeWords(e.target.value))}
             autoCapitalize="words"
-            placeholder="Имя Фамилия"
+            placeholder="Имя"
+            className="w-full h-11 px-4 rounded-xl border border-gray-200 bg-surface text-sm focus:outline-none focus:ring-2 focus:ring-accent/30 focus:border-accent"
+          />
+          <input
+            type="text"
+            value={lastName}
+            onChange={(e) => setLastName(capitalizeWords(e.target.value))}
+            autoCapitalize="words"
+            placeholder="Фамилия"
             className="w-full h-11 px-4 rounded-xl border border-gray-200 bg-surface text-sm focus:outline-none focus:ring-2 focus:ring-accent/30 focus:border-accent"
           />
           <input

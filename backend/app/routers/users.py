@@ -5,7 +5,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.database import get_db
 from app.deps import get_current_user, require_role
 from app.models.user import User, UserRole
-from app.schemas.user import UserCreate, UserOut, UserUpdate
+from app.schemas.user import ProfileUpdate, UserCreate, UserOut, UserUpdate
 from app.utils.auth import hash_password
 
 router = APIRouter(prefix="/users", tags=["users"])
@@ -13,6 +13,31 @@ router = APIRouter(prefix="/users", tags=["users"])
 
 @router.get("/me", response_model=UserOut)
 async def get_me(current_user: User = Depends(get_current_user)):
+    return UserOut.model_validate(current_user)
+
+
+@router.patch("/me", response_model=UserOut)
+async def update_me(
+    body: ProfileUpdate,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    from app.utils.auth import hash_password, verify_password
+
+    if body.first_name is not None:
+        current_user.first_name = body.first_name
+    if body.last_name is not None:
+        current_user.last_name = body.last_name
+
+    if body.new_password:
+        if not body.old_password or not current_user.password_hash:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Old password required")
+        if not verify_password(body.old_password, current_user.password_hash):
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Wrong old password")
+        current_user.password_hash = hash_password(body.new_password)
+
+    await db.commit()
+    await db.refresh(current_user)
     return UserOut.model_validate(current_user)
 
 

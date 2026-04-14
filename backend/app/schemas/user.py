@@ -45,3 +45,10 @@ class UserUpdate(BaseModel):
     is_active: bool | None = None
     is_blocked: bool | None = None
     avatar_url: str | None = None
+
+
+class ProfileUpdate(BaseModel):
+    first_name: str | None = None
+    last_name: str | None = None
+    old_password: str | None = None
+    new_password: str | None = None

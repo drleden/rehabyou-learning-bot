@@ -143,7 +143,7 @@ async def unpublish_course(
 @router.delete("/{course_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_course(
     course_id: int,
-    current_user: User = Depends(require_role(UserRole.superadmin)),
+    current_user: User = Depends(require_role(UserRole.manager)),
     db: AsyncSession = Depends(get_db),
 ):
     result = await db.execute(select(Course).where(Course.id == course_id))

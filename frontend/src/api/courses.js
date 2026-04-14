@@ -15,6 +15,10 @@ export async function createCourse(body) {
   return data;
 }
 
+export async function deleteCourse(id) {
+  await client.delete(`/courses/${id}`);
+}
+
 export async function updateCourse(id, body) {
   const { data } = await client.patch(`/courses/${id}`, body);
   return data;

@@ -4,8 +4,11 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from sqlalchemy import func
+
 from app.database import get_db
 from app.deps import get_current_user, require_role
+from app.models.course import Module
 from app.models.lesson import Lesson, LessonProgress, LessonProgressStatus
 from app.models.user import User, UserRole
 from app.schemas.lesson import (
@@ -17,6 +20,34 @@ from app.schemas.lesson import (
 )
 
 router = APIRouter(prefix="/lessons", tags=["lessons"])
+
+
+@router.get("/progress/summary")
+async def progress_summary(
+    course_id: int,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    lesson_ids_result = await db.execute(
+        select(Lesson.id)
+        .join(Module, Lesson.module_id == Module.id)
+        .where(Module.course_id == course_id)
+    )
+    lesson_ids = [r[0] for r in lesson_ids_result.all()]
+    total = len(lesson_ids)
+    if total == 0:
+        return {"total": 0, "completed": 0, "percent": 0}
+
+    completed_result = await db.execute(
+        select(func.count(LessonProgress.id))
+        .where(
+            LessonProgress.user_id == current_user.id,
+            LessonProgress.lesson_id.in_(lesson_ids),
+            LessonProgress.status == LessonProgressStatus.completed,
+        )
+    )
+    completed = completed_result.scalar() or 0
+    return {"total": total, "completed": completed, "percent": round(completed / total * 100)}
 
 
 @router.get("/by-module/{module_id}", response_model=list[LessonOut])

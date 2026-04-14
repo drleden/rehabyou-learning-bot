@@ -66,3 +66,18 @@ export async function importCourse(json) {
   const { data } = await client.post('/courses/import', json);
   return data;
 }
+
+export async function getProgressSummary(courseId) {
+  const { data } = await client.get('/lessons/progress/summary', { params: { course_id: courseId } });
+  return data;
+}
+
+export async function updateLessonProgress(lessonId, progressStatus) {
+  const { data } = await client.put(`/lessons/${lessonId}/progress`, { status: progressStatus });
+  return data;
+}
+
+export async function getLessonProgress(lessonId) {
+  const { data } = await client.get(`/lessons/${lessonId}/progress`);
+  return data;
+}

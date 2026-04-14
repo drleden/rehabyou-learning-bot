@@ -7,6 +7,7 @@ from app.database import get_db
 from app.deps import get_current_user, require_role
 from app.models.course import Course, Module
 from app.models.lesson import Lesson
+from app.models.test import Test, TestAnswer, TestQuestion
 from app.models.user import User, UserRole
 from app.schemas.course import (
     CourseCreate,
@@ -156,11 +157,28 @@ async def delete_course(
 
 # --- Import ---
 
+class AnswerImport(BaseModel):
+    answer_text: str
+    is_correct: bool = False
+
+
+class QuestionImport(BaseModel):
+    question_text: str
+    order_index: int = 0
+    answers: list[AnswerImport] = []
+
+
+class TestImport(BaseModel):
+    pass_threshold: int = 95
+    questions: list[QuestionImport] = []
+
+
 class LessonImport(BaseModel):
     title: str
     content_text: str | None = None
     video_url: str | None = None
     order_index: int = 0
+    test: TestImport | None = None
 
 
 class ModuleImport(BaseModel):
@@ -209,6 +227,18 @@ async def import_course(
                 order_index=les_data.order_index,
             )
             db.add(lesson)
+            await db.flush()
+
+            if les_data.test and les_data.test.questions:
+                test = Test(lesson_id=lesson.id, pass_threshold=les_data.test.pass_threshold)
+                db.add(test)
+                await db.flush()
+                for q_data in les_data.test.questions:
+                    q = TestQuestion(test_id=test.id, question_text=q_data.question_text, order_index=q_data.order_index)
+                    db.add(q)
+                    await db.flush()
+                    for a_data in q_data.answers:
+                        db.add(TestAnswer(question_id=q.id, answer_text=a_data.answer_text, is_correct=a_data.is_correct))
 
     await db.commit()
     await db.refresh(course)

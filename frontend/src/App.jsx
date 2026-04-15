@@ -11,6 +11,7 @@ import Employees from './pages/admin/Employees';
 import Studios from './pages/admin/Studios';
 import Courses from './pages/admin/Courses';
 import CourseDetail from './pages/admin/CourseDetail';
+import Analytics from './pages/admin/Analytics';
 import Layout from './components/Layout';
 import ProtectedRoute from './components/ProtectedRoute';
 
@@ -92,6 +93,14 @@ export default function App() {
         element={
           <ProtectedRoute minimumRole="manager">
             <CourseDetail />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/admin/analytics"
+        element={
+          <ProtectedRoute minimumRole="manager">
+            <Analytics />
           </ProtectedRoute>
         }
       />

@@ -1,7 +1,9 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import useAuthStore from '../store/authStore';
 import { getRoleLabel } from '../utils/roles';
+import { SERVICES } from '../utils/services';
+import { getPermissions } from '../api/permissions';
 import client from '../api/client';
 
 function getInitials(name) {
@@ -13,6 +15,15 @@ export default function Profile() {
   const navigate = useNavigate();
   const { user, logout, loadUser } = useAuthStore();
   const [showEdit, setShowEdit] = useState(false);
+  const [permissions, setPermissions] = useState([]);
+
+  useEffect(() => {
+    if (!user) return;
+    getPermissions(user.id).then(setPermissions).catch(() => {});
+  }, [user]);
+
+  const permByService = {};
+  permissions.forEach((p) => { permByService[p.service] = p; });
 
   const handleLogout = () => {
     logout();
@@ -55,6 +66,29 @@ export default function Profile() {
             <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
           </svg>
         </button>
+      </div>
+
+      <div className="px-4 mt-6">
+        <h2 className="font-bold text-sm text-gray-900 mb-2">Мои допуски</h2>
+        <div className="space-y-2">
+          {SERVICES.map((srv) => {
+            const allowed = !!permByService[srv.value];
+            return (
+              <div
+                key={srv.value}
+                className="flex items-center gap-3 p-3 bg-surface rounded-2xl"
+              >
+                <span className="text-2xl flex-shrink-0">{srv.icon}</span>
+                <div className="flex-1 min-w-0">
+                  <p className="font-medium text-sm text-gray-900 truncate">{srv.label}</p>
+                  <span className={`text-[11px] font-semibold ${allowed ? 'text-green-600' : 'text-gray-400'}`}>
+                    {allowed ? '✓ Допущен' : '✗ Нет допуска'}
+                  </span>
+                </div>
+              </div>
+            );
+          })}
+        </div>
       </div>
 
       <div className="px-4 mt-8">

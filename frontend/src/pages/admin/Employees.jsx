@@ -208,6 +208,15 @@ export default function Employees() {
             </div>
             <div className="mt-5 space-y-2">
               <button
+                onClick={() => navigate(`/profile/${selected.id}`)}
+                className="w-full h-11 bg-accent/10 text-accent font-semibold rounded-xl text-sm hover:bg-accent/20 transition-colors flex items-center justify-center gap-1"
+              >
+                Профиль мастера
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                </svg>
+              </button>
+              <button
                 onClick={() => setShowRolePicker(true)}
                 className="w-full h-11 bg-surface text-gray-900 font-semibold rounded-xl text-sm hover:bg-gray-100 transition-colors"
               >

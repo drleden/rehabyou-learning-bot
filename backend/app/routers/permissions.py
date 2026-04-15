@@ -47,7 +47,7 @@ async def user_permissions(
 @router.post("/grant", response_model=PermissionOut, status_code=status.HTTP_201_CREATED)
 async def grant_permission(
     body: PermissionGrant,
-    current_user: User = Depends(require_role(UserRole.manager)),
+    current_user: User = Depends(require_role(UserRole.senior_master)),
     db: AsyncSession = Depends(get_db),
 ):
     perm = ServicePermission(
@@ -61,10 +61,10 @@ async def grant_permission(
     return PermissionOut.model_validate(perm)
 
 
-@router.post("/revoke/{permission_id}", response_model=PermissionOut)
+@router.delete("/revoke/{permission_id}", response_model=PermissionOut)
 async def revoke_permission(
     permission_id: int,
-    current_user: User = Depends(require_role(UserRole.manager)),
+    current_user: User = Depends(require_role(UserRole.senior_master)),
     db: AsyncSession = Depends(get_db),
 ):
     result = await db.execute(

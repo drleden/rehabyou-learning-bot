@@ -5,6 +5,7 @@ import CourseView from './pages/CourseView';
 import LessonView from './pages/LessonView';
 import TestView from './pages/TestView';
 import Profile from './pages/Profile';
+import MasterProfile from './pages/MasterProfile';
 import AdminDashboard from './pages/AdminDashboard';
 import Employees from './pages/admin/Employees';
 import Studios from './pages/admin/Studios';
@@ -43,6 +44,14 @@ export default function App() {
         element={
           <ProtectedRoute>
             <TestView />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/profile/:userId"
+        element={
+          <ProtectedRoute minimumRole="senior_master">
+            <MasterProfile />
           </ProtectedRoute>
         }
       />

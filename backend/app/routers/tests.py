@@ -4,8 +4,11 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import get_db
 from app.deps import get_current_user, require_role
+from app.models.course import Course, Module
+from app.models.lesson import Lesson, LessonProgress, LessonProgressStatus
 from app.models.test import Test, TestAnswer, TestAttempt, TestQuestion
 from app.models.user import User, UserRole
+from app.utils.notify import notify_bot
 from app.schemas.test import (
     TestAnswerCreate,
     TestAnswerOut,
@@ -215,6 +218,52 @@ async def submit_test(
     db.add(attempt)
     await db.commit()
     await db.refresh(attempt)
+
+    # Notifications
+    if current_user.telegram_id:
+        if not passed:
+            await notify_bot({
+                "type": "test_failed",
+                "telegram_id": current_user.telegram_id,
+                "first_name": current_user.first_name,
+                "score": score,
+                "threshold": test.pass_threshold,
+            })
+        else:
+            # Check if all lessons in course are completed → course_completed
+            lesson_res = await db.execute(select(Lesson).where(Lesson.id == test.lesson_id))
+            lesson = lesson_res.scalar_one_or_none()
+            if lesson:
+                mod_res = await db.execute(select(Module).where(Module.id == lesson.module_id))
+                module = mod_res.scalar_one_or_none()
+                if module:
+                    # Count lessons in course
+                    all_lessons_res = await db.execute(
+                        select(Lesson.id)
+                        .join(Module, Lesson.module_id == Module.id)
+                        .where(Module.course_id == module.course_id)
+                    )
+                    all_lesson_ids = [r[0] for r in all_lessons_res.all()]
+                    completed_res = await db.execute(
+                        select(LessonProgress.lesson_id)
+                        .where(
+                            LessonProgress.user_id == current_user.id,
+                            LessonProgress.lesson_id.in_(all_lesson_ids),
+                            LessonProgress.status == LessonProgressStatus.completed,
+                        )
+                    )
+                    completed_ids = {r[0] for r in completed_res.all()}
+                    if set(all_lesson_ids).issubset(completed_ids):
+                        course_res = await db.execute(select(Course).where(Course.id == module.course_id))
+                        course = course_res.scalar_one_or_none()
+                        if course:
+                            await notify_bot({
+                                "type": "course_completed",
+                                "telegram_id": current_user.telegram_id,
+                                "first_name": current_user.first_name,
+                                "course_title": course.title,
+                            })
+
     return TestAttemptOut.model_validate(attempt)
 
 

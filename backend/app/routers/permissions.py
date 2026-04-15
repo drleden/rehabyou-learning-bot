@@ -9,6 +9,18 @@ from app.database import get_db
 from app.deps import get_current_user, require_role
 from app.models.permission import ServicePermission, ServiceType
 from app.models.user import User, UserRole
+from app.utils.notify import notify_bot
+
+
+SERVICE_LABELS = {
+    "classic": "Классический массаж",
+    "sport": "Спортивный массаж",
+    "relax": "Расслабляющий массаж",
+    "anticellulite": "Антицеллюлитный массаж",
+    "face": "Массаж лица",
+    "taping": "Тейпирование",
+    "stones": "Массаж камнями",
+}
 
 router = APIRouter(prefix="/permissions", tags=["permissions"])
 
@@ -58,6 +70,17 @@ async def grant_permission(
     db.add(perm)
     await db.commit()
     await db.refresh(perm)
+
+    # Notify via telegram bot if user has telegram_id
+    target = (await db.execute(select(User).where(User.id == body.user_id))).scalar_one_or_none()
+    if target and target.telegram_id:
+        await notify_bot({
+            "type": "permission_granted",
+            "telegram_id": target.telegram_id,
+            "first_name": target.first_name,
+            "service_name": SERVICE_LABELS.get(body.service.value, body.service.value),
+        })
+
     return PermissionOut.model_validate(perm)
 
 

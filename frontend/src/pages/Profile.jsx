@@ -169,10 +169,20 @@ function EditProfileSheet({ user, onClose, onSaved }) {
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center" onClick={onClose}>
       <div className="absolute inset-0 bg-black/30" />
-      <div className="relative w-full max-w-lg bg-white rounded-t-3xl p-5 pb-8 max-h-[85vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
-        <div className="w-10 h-1 bg-gray-200 rounded-full mx-auto mb-4" />
-        <h3 className="font-bold text-lg text-gray-900 mb-4">Редактировать профиль</h3>
-        <form onSubmit={handleSubmit} className="space-y-3">
+      <form
+        onSubmit={handleSubmit}
+        className="relative w-full max-w-lg bg-white rounded-t-3xl max-h-[85vh] flex flex-col"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="flex-shrink-0 pt-3 pb-2">
+          <div className="w-10 h-1 bg-gray-200 rounded-full mx-auto" />
+        </div>
+        <div className="flex-shrink-0 px-5 pb-3 border-b border-gray-100">
+          <h3 className="font-bold text-lg text-gray-900">Редактировать профиль</h3>
+        </div>
+
+        {/* Scrollable content */}
+        <div className="flex-1 overflow-y-auto px-5 py-4 space-y-3">
           <div>
             <label className="text-xs font-medium text-gray-600">Имя</label>
             <input
@@ -226,7 +236,10 @@ function EditProfileSheet({ user, onClose, onSaved }) {
 
           {error && <p className="text-sm text-red-500">{error}</p>}
           {success && <p className="text-sm text-green-600">{success}</p>}
+        </div>
 
+        {/* Sticky footer with Save button */}
+        <div className="flex-shrink-0 px-5 pt-3 pb-24 border-t border-gray-100 bg-white">
           <button
             type="submit"
             disabled={loading}
@@ -234,8 +247,8 @@ function EditProfileSheet({ user, onClose, onSaved }) {
           >
             {loading ? 'Сохранение...' : 'Сохранить'}
           </button>
-        </form>
-      </div>
+        </div>
+      </form>
     </div>
   );
 }

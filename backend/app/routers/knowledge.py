@@ -191,6 +191,56 @@ async def list_all_articles(
     return [ArticleOut.model_validate(a) for a in result.scalars().all()]
 
 
+class ArticleImportItem(BaseModel):
+    category_slug: str
+    title: str
+    content: str = ""
+    tags: list | None = None
+    video_url: str | None = None
+    is_published: bool = True
+
+
+class ArticleImportRequest(BaseModel):
+    articles: list[ArticleImportItem]
+
+
+@router.post("/import", status_code=status.HTTP_201_CREATED)
+async def import_articles(
+    body: ArticleImportRequest,
+    current_user: User = Depends(require_role(UserRole.manager)),
+    db: AsyncSession = Depends(get_db),
+):
+    slug_cache = {}
+    created = 0
+    for item in body.articles:
+        if item.category_slug not in slug_cache:
+            res = await db.execute(
+                select(KnowledgeCategory).where(KnowledgeCategory.slug == item.category_slug)
+            )
+            cat = res.scalar_one_or_none()
+            if not cat:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail=f"Category slug '{item.category_slug}' not found",
+                )
+            slug_cache[item.category_slug] = cat.id
+
+        article = KnowledgeArticle(
+            category_id=slug_cache[item.category_slug],
+            title=item.title,
+            content=item.content,
+            tags=item.tags,
+            video_url=item.video_url,
+            is_published=item.is_published,
+            created_by=current_user.id,
+        )
+        db.add(article)
+        created += 1
+
+    await db.commit()
+    return {"created": created}
+
+
 @router.post("/articles", response_model=ArticleOut, status_code=status.HTTP_201_CREATED)
 async def create_article(
     body: ArticleCreate,

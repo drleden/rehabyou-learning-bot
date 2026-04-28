@@ -10,6 +10,7 @@ from app.database import Base
 class UserRole(str, enum.Enum):
     novice = "novice"
     master = "master"
+    administrator = "administrator"
     senior_master = "senior_master"
     teacher = "teacher"
     manager = "manager"

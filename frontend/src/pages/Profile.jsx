@@ -70,6 +70,7 @@ export default function Profile() {
         <TelegramSection user={user} onUpdate={loadUser} />
       </div>
 
+      {user.role !== 'administrator' && (
       <div className="px-4 mt-6">
         <h2 className="font-bold text-sm text-gray-900 mb-2">Мои допуски</h2>
         <div className="space-y-2">
@@ -92,6 +93,7 @@ export default function Profile() {
           })}
         </div>
       </div>
+      )}
 
       <div className="px-4 mt-8">
         <button

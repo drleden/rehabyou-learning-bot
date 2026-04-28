@@ -4,6 +4,7 @@ import { phoneLogin as apiPhoneLogin, getMe } from '../api/auth';
 const ROLE_HIERARCHY = [
   'novice',
   'master',
+  'administrator',
   'senior_master',
   'teacher',
   'manager',

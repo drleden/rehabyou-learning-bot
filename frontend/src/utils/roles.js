@@ -1,6 +1,7 @@
 export const ROLE_LABELS = {
   novice: 'Новичок',
   master: 'Мастер',
+  administrator: 'Администратор',
   senior_master: 'Старший мастер',
   teacher: 'Преподаватель',
   manager: 'Менеджер',
@@ -11,6 +12,7 @@ export const ROLE_LABELS = {
 export const ROLE_COLORS = {
   novice: 'bg-gray-100 text-gray-600',
   master: 'bg-blue-50 text-blue-600',
+  administrator: 'bg-teal-50 text-teal-600',
   senior_master: 'bg-indigo-50 text-indigo-600',
   teacher: 'bg-purple-50 text-purple-600',
   manager: 'bg-accent/10 text-accent',

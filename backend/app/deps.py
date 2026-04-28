@@ -12,6 +12,7 @@ bearer_scheme = HTTPBearer()
 ROLE_HIERARCHY = [
     UserRole.novice,
     UserRole.master,
+    UserRole.administrator,
     UserRole.senior_master,
     UserRole.teacher,
     UserRole.manager,

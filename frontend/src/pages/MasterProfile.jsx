@@ -149,7 +149,8 @@ export default function MasterProfile() {
         </section>
       )}
 
-      {/* Service permissions */}
+      {/* Service permissions — hidden for administrators */}
+      {user.role !== 'administrator' && (
       <section className="mt-5 px-4 pb-6">
         <h3 className="font-bold text-sm text-gray-900 mb-2">Допуски к услугам</h3>
         <div className="space-y-2">
@@ -193,6 +194,7 @@ export default function MasterProfile() {
           })}
         </div>
       </section>
+      )}
     </div>
   );
 }

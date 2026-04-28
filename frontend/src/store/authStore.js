@@ -15,9 +15,43 @@ export function hasMinimumRole(userRole, minimumRole) {
   return ROLE_HIERARCHY.indexOf(userRole) >= ROLE_HIERARCHY.indexOf(minimumRole);
 }
 
+function safeGetItem(key) {
+  try {
+    return localStorage.getItem(key);
+  } catch {
+    return null;
+  }
+}
+
+function safeSetItem(key, value) {
+  try {
+    localStorage.setItem(key, value);
+  } catch {
+    /* storage unavailable (private mode, quota) */
+  }
+}
+
+function safeRemoveItem(key) {
+  try {
+    localStorage.removeItem(key);
+  } catch {
+    /* ignore */
+  }
+}
+
+function parseStoredUser() {
+  const raw = safeGetItem('user');
+  if (!raw) return null;
+  try {
+    return JSON.parse(raw);
+  } catch {
+    return null;
+  }
+}
+
 const useAuthStore = create((set, get) => ({
-  user: JSON.parse(localStorage.getItem('user') || 'null'),
-  token: localStorage.getItem('token') || null,
+  user: parseStoredUser(),
+  token: safeGetItem('token'),
   isLoading: false,
   error: null,
 
@@ -25,21 +59,22 @@ const useAuthStore = create((set, get) => ({
     set({ isLoading: true, error: null });
     try {
       const data = await apiPhoneLogin(phone, password);
-      localStorage.setItem('token', data.access_token);
-      localStorage.setItem('user', JSON.stringify(data.user));
+      safeSetItem('token', data.access_token);
+      safeSetItem('user', JSON.stringify(data.user));
       set({ token: data.access_token, user: data.user, isLoading: false });
       return data.user;
     } catch (err) {
       const message =
-        err.response?.data?.detail || 'Ошибка входа. Проверьте данные.';
+        (err && err.response && err.response.data && err.response.data.detail) ||
+        'Ошибка входа. Проверьте данные.';
       set({ error: message, isLoading: false });
       throw err;
     }
   },
 
   logout: () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
+    safeRemoveItem('token');
+    safeRemoveItem('user');
     set({ user: null, token: null, error: null });
   },
 
@@ -50,12 +85,12 @@ const useAuthStore = create((set, get) => ({
     set({ isLoading: true });
     try {
       const user = await getMe();
-      localStorage.setItem('user', JSON.stringify(user));
+      safeSetItem('user', JSON.stringify(user));
       set({ user, isLoading: false });
       return user;
     } catch {
-      localStorage.removeItem('token');
-      localStorage.removeItem('user');
+      safeRemoveItem('token');
+      safeRemoveItem('user');
       set({ user: null, token: null, isLoading: false });
       return null;
     }

@@ -8,6 +8,12 @@
     "build": "vite build",
     "preview": "vite preview"
   },
+  "browserslist": [
+    "ios >= 13",
+    "safari >= 13",
+    "chrome >= 80",
+    "firefox >= 78"
+  ],
   "dependencies": {
     "axios": "^1.15.0",
     "react": "^18.3.1",
@@ -17,10 +23,12 @@
     "zustand": "^5.0.12"
   },
   "devDependencies": {
+    "@vitejs/plugin-legacy": "^5.4.3",
     "@vitejs/plugin-react": "^4.3.2",
     "autoprefixer": "^10.4.20",
     "postcss": "^8.4.47",
     "tailwindcss": "^3.4.13",
+    "terser": "^5.46.1",
     "vite": "^5.4.9"
   }
 }

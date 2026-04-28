@@ -8,6 +8,8 @@ import Profile from './pages/Profile';
 import MasterProfile from './pages/MasterProfile';
 import KnowledgeBase from './pages/KnowledgeBase';
 import KnowledgeArticle from './pages/KnowledgeArticle';
+import Documents from './pages/Documents';
+import DocumentView from './pages/DocumentView';
 import AdminDashboard from './pages/AdminDashboard';
 import Employees from './pages/admin/Employees';
 import Studios from './pages/admin/Studios';
@@ -36,6 +38,8 @@ export default function App() {
         <Route path="/profile" element={<Profile />} />
         <Route path="/knowledge" element={<KnowledgeBase />} />
         <Route path="/knowledge/article/:id" element={<KnowledgeArticle />} />
+        <Route path="/documents" element={<Documents />} />
+        <Route path="/documents/:id" element={<DocumentView />} />
       </Route>
       <Route
         path="/lesson/:id"

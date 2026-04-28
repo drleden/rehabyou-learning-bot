@@ -7,6 +7,7 @@ from app.models.assignment import PracticalAssignment, AssignmentStatus
 from app.models.permission import ServicePermission, ServiceType
 from app.models.notification import Notification
 from app.models.knowledge import KnowledgeCategory, KnowledgeArticle
+from app.models.document import Document
 
 __all__ = [
     "User",

@@ -65,6 +65,18 @@ export default function KnowledgeBase() {
             {selectedSub ? selectedSub.title : selectedRoot ? selectedRoot.title : 'База знаний'}
           </h1>
         </div>
+        {!selectedRoot && !selectedSub && (
+          <button
+            onClick={function() { navigate('/documents'); }}
+            className="w-full flex items-center gap-3 p-3 mb-3 bg-accent/5 border border-accent/20 rounded-2xl text-left hover:bg-accent/10 transition-colors"
+          >
+            <span className="text-xl">📄</span>
+            <span className="font-semibold text-sm text-accent">Документы</span>
+            <svg className="w-4 h-4 text-accent/50 ml-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+            </svg>
+          </button>
+        )}
         <input
           type="text"
           value={search}

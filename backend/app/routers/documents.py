@@ -30,6 +30,8 @@ async def list_documents(
     result = await db.execute(select(Document).order_by(Document.category, Document.order_index))
     docs = result.scalars().all()
     role = current_user.role.value
+    if role in ("superadmin", "owner", "manager"):
+        return [DocumentOut.model_validate(d) for d in docs]
     return [
         DocumentOut.model_validate(d) for d in docs
         if not d.visible_roles or role in d.visible_roles

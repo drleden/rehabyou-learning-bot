@@ -6,12 +6,15 @@ import LessonView from './pages/LessonView';
 import TestView from './pages/TestView';
 import Profile from './pages/Profile';
 import MasterProfile from './pages/MasterProfile';
+import KnowledgeBase from './pages/KnowledgeBase';
+import KnowledgeArticle from './pages/KnowledgeArticle';
 import AdminDashboard from './pages/AdminDashboard';
 import Employees from './pages/admin/Employees';
 import Studios from './pages/admin/Studios';
 import Courses from './pages/admin/Courses';
 import CourseDetail from './pages/admin/CourseDetail';
 import Analytics from './pages/admin/Analytics';
+import KnowledgeAdmin from './pages/admin/KnowledgeAdmin';
 import Layout from './components/Layout';
 import ProtectedRoute from './components/ProtectedRoute';
 
@@ -31,6 +34,8 @@ export default function App() {
         <Route path="/academy" element={<PlaceholderPage title="Академия" />} />
         <Route path="/calendar" element={<PlaceholderPage title="Календарь" />} />
         <Route path="/profile" element={<Profile />} />
+        <Route path="/knowledge" element={<KnowledgeBase />} />
+        <Route path="/knowledge/article/:id" element={<KnowledgeArticle />} />
       </Route>
       <Route
         path="/lesson/:id"
@@ -77,6 +82,14 @@ export default function App() {
         element={
           <ProtectedRoute minimumRole="owner">
             <Studios />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/admin/knowledge"
+        element={
+          <ProtectedRoute minimumRole="manager">
+            <KnowledgeAdmin />
           </ProtectedRoute>
         }
       />

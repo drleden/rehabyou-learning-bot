@@ -38,10 +38,10 @@ export default function BottomNav() {
 
   const navItems = [
     { to: '/', label: 'Каталог', icon: catalogIcon },
+    { to: '/knowledge', label: 'База', icon: academyIcon },
     isManager
       ? { to: '/admin', label: 'Админ', icon: adminIcon }
-      : { to: '/academy', label: 'Академия', icon: academyIcon },
-    { to: '/calendar', label: 'Календарь', icon: calendarIcon },
+      : { to: '/calendar', label: 'Календарь', icon: calendarIcon },
     { to: '/profile', label: 'Профиль', icon: profileIcon },
   ];
 
